@@ -1,0 +1,6 @@
+name: "SimulatedExtraction"
+author: "CuteLuoBo"
+version: "0.1.0"
+main: "com.github.cuteluobo.SimulatedExtraction"
+info: "模拟抽卡插件(主要为阴阳师)"
+depends: []
