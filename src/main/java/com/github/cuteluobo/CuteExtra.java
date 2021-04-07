@@ -27,12 +27,14 @@ import java.util.concurrent.Future;
  * 主类
  * @author Cute_LuoBo
  */
-public final class SimulatedExtraction extends JavaPlugin {
+public final class CuteExtra extends JavaPlugin {
 
     private MiraiLogger logger  = getLogger();
+    public static final CuteExtra INSTANCE = new CuteExtra();
+
 
     /**初始化*/
-    public SimulatedExtraction() {
+    private CuteExtra() {
         super(new JvmPluginDescriptionBuilder(
                 "SimulatedExtraction",
                 "0.1.0")
@@ -59,6 +61,10 @@ public final class SimulatedExtraction extends JavaPlugin {
     /**初始化权限*/
     private void permissionExecute() throws PermissionRegistryConflictException {
         PermissionService.getInstance().register(new PermissionId("CuteExtra","normal"),"插件默认权限",null);
+    }
+
+    private void commandReg(){
+
     }
 
 }          
