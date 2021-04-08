@@ -5,7 +5,8 @@ package com.github.cuteluobo.enums;
  * @date 2021-04-07
  */
 public enum YysRoll {
-    R("R",0.7875f),SR("SR",0.2f),SSR("SSR",0.01F),SSR_SP_SKIN("SSR",0.001F),SP("SP",0.0025F);
+    /**设置各抽卡概率，见官方:https://yys.163.com/news/notice/2017/05/01/25369_665793.html*/
+    R("R",0.7875f),SR("SR",0.2f),SSR("SSR",0.01F),SP("SP",0.0025F);
 
 
     /**

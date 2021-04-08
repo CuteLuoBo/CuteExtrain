@@ -1,5 +1,7 @@
 package com.github.cuteluobo.Pojo;
 
+import model.YysUnit;
+
 /**
  * 抽卡对象
  * @author CuteLuoBo
@@ -18,6 +20,16 @@ public class RollUnit {
     private String specialName;
 
     private Float rollProb;
+
+    public RollUnit(){}
+
+    public RollUnit(YysUnit yysUnit) {
+        RollUnit rollUnit = new RollUnit();
+        rollUnit.id = yysUnit.getId();
+        rollUnit.level = yysUnit.getLevel();
+        rollUnit.name = yysUnit.getName();
+        rollUnit.specialName = yysUnit.getSpecialName();
+    }
 
     @Override
     public String toString() {

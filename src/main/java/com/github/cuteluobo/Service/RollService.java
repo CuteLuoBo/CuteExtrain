@@ -2,6 +2,7 @@ package com.github.cuteluobo.Service;
 
 import com.github.cuteluobo.Pojo.RollImgResult;
 import com.github.cuteluobo.Pojo.RollResultData;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * @author CuteLuoBo
@@ -13,18 +14,18 @@ public interface RollService {
      * @param up 是否启用概率up
      * @param upRate   up倍率
      * @param upNum up
-     * @param rollProb 指定抽取概率，为null时使用默认概率
+     * @param winProb 高阶抽取概率，为null时使用默认概率
      * @return 抽取结果
      * */
-    public RollResultData rollText(Integer rollNum, Boolean up, Float upRate, Integer upNum, Float rollProb);
+    public RollResultData rollText(@NotNull Integer rollNum,@NotNull Boolean up, Float upRate, Integer upNum, Float winProb);
 
     /**抽取图片结果
      * @param rollNum  抽取次数
      * @param up 是否启用概率up
      * @param upRate   up倍率
      * @param upNum up
-     * @param rollProb 指定抽取概率，为null时使用默认概率
+     * @param winProb 高阶抽取概率，为null时使用默认概率
      * @return 抽取结果
      * */
-    public RollImgResult rollImg(Integer rollNum, Boolean up, Float upRate, Integer upNum, Float rollProb);
+    public RollImgResult rollImg(@NotNull Integer rollNum,@NotNull Boolean up, Float upRate, Integer upNum, Float winProb);
 }

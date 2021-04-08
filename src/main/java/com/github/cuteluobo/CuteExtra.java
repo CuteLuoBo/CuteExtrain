@@ -1,5 +1,7 @@
 package com.github.cuteluobo;
 
+import cn.pomit.mybatis.configuration.MybatisConfiguration;
+import cn.pomit.mybatis.configuration.MybatisProperties;
 import kotlin.coroutines.CoroutineContext;
 import kotlinx.coroutines.Job;
 import net.mamoe.mirai.console.permission.PermissionId;
@@ -16,6 +18,7 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 import java.io.File;
+import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -46,7 +49,7 @@ public final class CuteExtra extends JavaPlugin {
 
 
     public void onLoad() {
-
+        initDatasource();
     }
 
     @Override
@@ -65,6 +68,18 @@ public final class CuteExtra extends JavaPlugin {
 
     private void commandReg(){
 
+    }
+
+    private void initDatasource(){
+        Properties  properties= new Properties();
+		properties.put("mybatis.mapper.scan", "com.github.cuteluobo.mapper");
+		properties.put("mybatis.datasource.type", "POOLED");
+		properties.put("mybatis.datasource.driver", "org.sqlite.JDBC");
+		//TODO 增加使用mysql数据库方式
+		properties.put("mybatis.datasource.url", "jdbc:sqlite:database.sqlite");
+		properties.put("mybatis.datasource.username", "");
+		properties.put("mybatis.datasource.password", "");
+        MybatisConfiguration.initConfiguration(properties);
     }
 
 }          
