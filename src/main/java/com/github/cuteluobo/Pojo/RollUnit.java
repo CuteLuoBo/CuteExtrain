@@ -15,7 +15,7 @@ public class RollUnit {
     private String name;
 
     /**
-     * 特殊名称（抽取时获得SP皮肤）
+     * 特殊名称（例：抽取时获得SP皮肤）
      */
     private String specialName;
 
@@ -37,9 +37,18 @@ public class RollUnit {
         sb.append("id=").append(id);
         sb.append(", level='").append(level).append('\'');
         sb.append(", name='").append(name).append('\'');
+        sb.append(", specialName='").append(specialName).append('\'');
         sb.append(", rollProb=").append(rollProb);
         sb.append('}');
         return sb.toString();
+    }
+
+    public String getSpecialName() {
+        return specialName;
+    }
+
+    public void setSpecialName(String specialName) {
+        this.specialName = specialName;
     }
 
     public Float getRollProb() {

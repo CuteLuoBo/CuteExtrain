@@ -1,6 +1,7 @@
 package com.github.cuteluobo.Service;
 
 import com.github.cuteluobo.Pojo.RollResultData;
+import com.github.cuteluobo.Pojo.RollUnit;
 
 /**
  * @author CuteLuoBo
@@ -9,9 +10,9 @@ import com.github.cuteluobo.Pojo.RollResultData;
 public interface ExpandRollService extends RollService {
     /**
      * 抽取指定对象
-     * @param rollUnitId 抽取对象ID
+     * @param rollUnit 指定概率UP对象
      * @param fullBuff 是否启用全图鉴加成
      * @return
      */
-    public RollResultData rollTextForSpecifyUnit(Integer rollUnitId,Boolean fullBuff);
+    public RollResultData rollTextForSpecifyUnit(RollUnit rollUnit, Boolean fullBuff);
 }

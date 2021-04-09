@@ -11,11 +11,19 @@ public class RollResultUnit extends RollUnit {
     /**
      * 特殊状态
      */
-    private Boolean special;
+    private Boolean special = false;
     /**
      * 出货时的抽取次数
      */
     private Integer sequence;
+
+    public Boolean getSpecial() {
+        return special;
+    }
+
+    public void setSpecial(Boolean special) {
+        this.special = special;
+    }
 
     public Integer getSequence() {
         return sequence;
@@ -37,7 +45,7 @@ public class RollResultUnit extends RollUnit {
     public String toString() {
         final StringBuffer sb = new StringBuffer("RollResultUnit{");
         sb.append("第").append(sequence).append("抽:")
-                .append(getLevel()).append(" ").append(getName()).append(up?"(UP)":"");
+                .append(getLevel()).append(" ").append(special?getName():getSpecialName()).append(up?"(UP)":"");
         return sb.toString();
     }
 }
