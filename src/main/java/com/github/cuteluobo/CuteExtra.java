@@ -23,7 +23,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 /**
- * TODO 参考文档：https://github.com/Karlatemp/mirai-console-example-plugin/blob/master/src/main/kotlin/org/example/my/plugin/MyPluginMain.kt
+ * 参考文档：https://github.com/Karlatemp/mirai-console-example-plugin/blob/master/src/main/kotlin/org/example/my/plugin/MyPluginMain.kt
  * https://github.com/mamoe/mirai-console/blob/master/docs/Commands.md
  * https://github.com/mamoe/mirai-console/blob/master/docs/PluginData.md
  * https://github.com/mamoe/mirai-console/blob/master/docs/Permissions.md

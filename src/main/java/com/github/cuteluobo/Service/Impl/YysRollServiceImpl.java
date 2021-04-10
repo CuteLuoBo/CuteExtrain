@@ -6,10 +6,9 @@ import com.github.cuteluobo.Pojo.RollResultData;
 import com.github.cuteluobo.Pojo.RollResultUnit;
 import com.github.cuteluobo.Pojo.RollUnit;
 import com.github.cuteluobo.Service.ExpandRollService;
-import com.github.cuteluobo.Service.RollService;
 import com.github.cuteluobo.enums.YysRoll;
-import mapper.YysUnitMapper;
-import model.YysUnit;
+import com.github.cuteluobo.mapper.YysUnitMapper;
+import com.github.cuteluobo.model.YysUnit;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -34,6 +33,7 @@ public class YysRollServiceImpl implements ExpandRollService {
     private YysRollServiceImpl(){
        yysUnitMapper = ProxyHandlerFactory.getMapper(YysUnitMapper.class);
        //填充卡池式神数据
+        //TODO 配置Mybatis日志打印并排除无查询数据问题
         List<YysUnit> yysUnitList = yysUnitMapper.selectList(true);
         if (yysUnitList != null) {
             List<RollUnit> rollUnitList = yysUnitList.stream().map(RollUnit::new).collect(Collectors.toList());
@@ -72,8 +72,10 @@ public class YysRollServiceImpl implements ExpandRollService {
         if (upRate == null) {
             upRate = this.UP_RATE;
         }
-        if (!up) {
-            upNum = 0;
+        if (upNum == null) {
+            upNum = up?3:0;
+        }else {
+            upNum = up?upNum:0;
         }
         for (int i = 1; i <= rollNum; i++) {
             //出货时减去Up次数

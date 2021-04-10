@@ -1,6 +1,6 @@
 package com.github.cuteluobo.Pojo;
 
-import model.YysUnit;
+import com.github.cuteluobo.model.YysUnit;
 
 /**
  * 抽卡对象

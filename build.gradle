@@ -24,7 +24,11 @@ dependencies {
     compileOnly "net.mamoe:mirai-core:$miraiCoreVersion"
     compileOnly "net.mamoe:mirai-console:$miraiConsoleVersion"
     implementation group: 'cn.pomit', name: 'mybatis-proxy', version: '1.1'
+    // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.14.1'
     implementation group: 'com.amihaiemil.web', name: 'eo-yaml', version: '5.1.6'
+    // https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc
+    implementation group: 'org.xerial', name: 'sqlite-jdbc', version: '3.34.0'
     testImplementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
     testImplementation "net.mamoe:mirai-core:$miraiCoreVersion"
 //    testImplementation "net.mamoe:mirai-core-qqandroid:$miraiCoreVersion"
