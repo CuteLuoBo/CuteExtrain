@@ -18,7 +18,6 @@ public interface YysUnitMapper {
      * @param canRoll 筛选可抽取
      * @return 查询列表
      */
-//    @ResultMap("BaseResultMap")
     @Select("SELECT * FROM YysUnit WHERE can_roll = #{canRoll}")
     public List<YysUnit> selectList(Boolean canRoll);
 }

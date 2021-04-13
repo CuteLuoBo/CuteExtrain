@@ -3,15 +3,24 @@ package com.github.cuteluobo.Pojo;
 import com.github.cuteluobo.enums.YysRoll;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 抽卡结果
  * @author CuteLuoBo
  * @date 2021-04-07
  */
-public class RollResultData {
+public abstract class RollResultData {
+    /**
+     * 抽卡结果数组
+     */
     private List<RollResultUnit> rollResultUnitList;
 
+    /**
+     * 抽取提示(在多少抽后面插入)
+     * <抽取次数，提示语>
+     */
+    private Map<Integer, String> tipMap;
     private Integer rollNum;
 
     /**
@@ -20,35 +29,7 @@ public class RollResultData {
      * @param hideLowLevelDetail 是否隐藏低阶细节（仅统计数量）
      * @return
      */
-    public String printResultText(boolean showAllLevel,boolean hideLowLevelDetail){
-        final StringBuffer sb = new StringBuffer(rollNum);
-        sb.append("次抽卡结果:").append("\\n");
-        if (rollResultUnitList==null || rollResultUnitList.size()==0){
-            sb.append("无事发生");
-        }else {
-            int rLevelNum = 0;
-            int srLevelNum = 0;
-            if (!showAllLevel) {
-                for (RollResultUnit rollResultUnit : rollResultUnitList) {
-                    if (YysRoll.SSR.getLevel().equals(rollResultUnit.getLevel()) || YysRoll.SSR.getLevel().equals(rollResultUnit.getLevel())) {
-                        sb.append(rollResultUnit).append("\\n");
-                    }
-                    if (YysRoll.SR.getLevel().equals(rollResultUnit.getLevel())) {
-                        srLevelNum++;
-                    }
-                    if (YysRoll.R.getLevel().equals(rollResultUnit.getLevel())) {
-                        rLevelNum++;
-                    }
-                }
-            }else {
-                for (RollResultUnit rollResultUnit : rollResultUnitList) {
-                    sb.append(rollResultUnit).append("\\n");
-                }
-            }
-            //TODO 增加低阶输出（转换到子对象）
-        }
-        return sb.toString();
-    }
+    public abstract String printResultText(boolean showAllLevel,boolean hideLowLevelDetail);
 
     public String printResultText(){
         return printResultText(false,true);
@@ -68,5 +49,13 @@ public class RollResultData {
 
     public void setRollNum(Integer rollNum) {
         this.rollNum = rollNum;
+    }
+
+    public Map<Integer, String> getTipMap() {
+        return tipMap;
+    }
+
+    public void setTipMap(Map<Integer, String> tipMap) {
+        this.tipMap = tipMap;
     }
 }

@@ -9,10 +9,13 @@
     <result column="level" jdbcType="LONGVARCHAR" property="level" />
     <result column="name" jdbcType="LONGVARCHAR" property="name" />
     <result column="special_name" jdbcType="LONGVARCHAR" property="specialName" />
-    <result column="can_roll" jdbcType="NUMERIC" property="canRoll" />
+    <result column="can_roll" jdbcType="INTEGER" property="canRoll" />
   </resultMap>
   <sql id="Base_Column_List">
     <!--@mbg.generated-->
     id, unit_id, "level", "name", special_name, can_roll
   </sql>
+  <select id="selectList" resultMap="BaseResultMap">
+    SELECT <include refid="Base_Column_List" /> FROM YysUnit WHERE can_roll = #{canRoll}
+    </select>
 </mapper>

@@ -1,18 +1,15 @@
-package com.github.cuteluobo.Service.Impl;
+package com.github.cuteluobo.service.Impl;
 
 import cn.pomit.mybatis.ProxyHandlerFactory;
-import com.github.cuteluobo.Pojo.RollImgResult;
-import com.github.cuteluobo.Pojo.RollResultData;
-import com.github.cuteluobo.Pojo.RollResultUnit;
-import com.github.cuteluobo.Pojo.RollUnit;
-import com.github.cuteluobo.Service.ExpandRollService;
+import com.github.cuteluobo.Pojo.*;
+import com.github.cuteluobo.service.ExpandRollService;
 import com.github.cuteluobo.enums.YysRoll;
 import com.github.cuteluobo.mapper.YysUnitMapper;
 import com.github.cuteluobo.model.YysUnit;
 import org.jetbrains.annotations.NotNull;
 
+import java.math.BigDecimal;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author CuteLuoBo
@@ -36,17 +33,27 @@ public class YysRollServiceImpl implements ExpandRollService {
         //TODO 配置Mybatis日志打印并排除无查询数据问题
         List<YysUnit> yysUnitList = yysUnitMapper.selectList(true);
         if (yysUnitList != null) {
-            List<RollUnit> rollUnitList = yysUnitList.stream().map(RollUnit::new).collect(Collectors.toList());
-            for (RollUnit rollUnit : rollUnitList) {
+            for (YysUnit yysUnit :
+                    yysUnitList) {
+                Map<Integer,RollUnit> levelRollUnitMap = rollUnitMap.get(yysUnit.getLevel());
                 //获取已有阶级式神列表，为null时进行初始化
-                Map<Integer,RollUnit> levelRollUnitMap = rollUnitMap.get(rollUnit.getLevel());
                 if (levelRollUnitMap == null) {
                     levelRollUnitMap = new HashMap<>();
-                    rollUnitMap.put(rollUnit.getLevel(), levelRollUnitMap);
+                    rollUnitMap.put(yysUnit.getLevel(), levelRollUnitMap);
                 }
-                //对引用对象操作应该可以存进map里？
-                levelRollUnitMap.put(rollUnit.getId(), rollUnit);
+                levelRollUnitMap.put(yysUnit.getUnitId(), new RollUnit(yysUnit));
             }
+//            List<RollUnit> rollUnitList = yysUnitList.stream().map(RollUnit::new).collect(Collectors.toList());
+//            for (RollUnit rollUnit : rollUnitList) {
+//
+//                Map<Integer,RollUnit> levelRollUnitMap = rollUnitMap.get(rollUnit.getLevel());
+//                if (levelRollUnitMap == null) {
+//                    levelRollUnitMap = new HashMap<>();
+//                    rollUnitMap.put(rollUnit.getLevel(), levelRollUnitMap);
+//                }
+//                //对引用对象操作应该可以存进map里？
+//                levelRollUnitMap.put(rollUnit.getId(), rollUnit);
+//            }
         }
     }
 
@@ -66,7 +73,7 @@ public class YysRollServiceImpl implements ExpandRollService {
         //初始返回数据对象
         List<RollResultUnit> rollResultUnitList = new ArrayList<>();
 
-        RollResultData rollResultData = new RollResultData();
+        RollResultData rollResultData = new YysRollResultData();
         rollResultData.setRollNum(rollNum);
         //未定义up倍数时手动添加
         if (upRate == null) {
@@ -78,21 +85,25 @@ public class YysRollServiceImpl implements ExpandRollService {
             upNum = up?upNum:0;
         }
         for (int i = 1; i <= rollNum; i++) {
-            //出货时减去Up次数
-            up = upNum-- > 0;
             String rollLevel = rollLevel(up, upRate);
-            RollUnit rollUnit = rollUnit(rollUnitMap.get(rollLevel));
-            RollResultUnit rollResultUnit = (RollResultUnit) rollUnit;
-            //为SSR阶时抽取皮肤
-            if (YysRoll.SSR.getLevel().equals(rollResultUnit.getLevel()) && rollUnit.getSpecialName() != null) {
-                rollResultUnit.setSpecial(rollSsrSkin());
+            RollUnit rollUnit = startRollUnit(rollUnitMap.get(rollLevel));
+            if (rollUnit != null) {
+                RollResultUnit rollResultUnit = new RollResultUnit (rollUnit);
+                //为SSR阶时抽取皮肤
+                if (YysRoll.SSR.getLevel().equals(rollResultUnit.getLevel()) && rollUnit.getSpecialName() != null) {
+                    rollResultUnit.setSpecial(rollSsrSkin());
+                }
+                rollResultUnit.setSequence(i);
+                rollResultUnitList.add(rollResultUnit);
+                if (YysRoll.SSR.getLevel().equals(rollResultUnit.getLevel()) || YysRoll.SP.getLevel().equals(rollResultUnit.getLevel())) {
+                    rollResultUnit.setUp(up);
+                    //出货时减去Up次数
+                    up = upNum-- > 0;
+                }
             }
-            rollResultUnit.setUp(up);
-            rollResultUnit.setSequence(i);
-            rollResultUnitList.add(rollResultUnit);
         }
         rollResultData.setRollUnitList(rollResultUnitList);
-        return null;
+        return rollResultData;
     }
 
     /**内部抽卡类
@@ -146,7 +157,7 @@ public class YysRollServiceImpl implements ExpandRollService {
      * @param levelRollUnitMap 卡池
      * @return 抽取结果
      */
-    private RollUnit rollUnit(Map<Integer,RollUnit> levelRollUnitMap){
+    private RollUnit startRollUnit(Map<Integer,RollUnit> levelRollUnitMap){
         if (levelRollUnitMap != null) {
             Random random = new Random();
             int rollUnitTemp = random.nextInt(levelRollUnitMap.size());
@@ -189,37 +200,72 @@ public class YysRollServiceImpl implements ExpandRollService {
     @Override
     public RollResultData rollTextForSpecifyUnit(@NotNull RollUnit rollUnit,@NotNull Boolean fullBuff) {
         //初始返回数据对象
+        RollResultData rollResultData = new YysRollResultData();
         List<RollResultUnit> rollResultUnitList = new ArrayList<>();
-        RollResultData rollResultData = new RollResultData();
+        Map<Integer, String> tipMap = new HashMap<>();
         //当前指定抽取概率
-        float rollProb = 0.0f;
+        BigDecimal rollProb = new BigDecimal(0);
         //最大概率
-        float maxProb = 0.0f;
+        BigDecimal maxProb = new BigDecimal(0);
+        //非全图到达700抽后的最终概率
+        BigDecimal noFullLastMaxProb = new BigDecimal(0);
         //阶梯提升数量
         int stepUpNum = 50;
         //阶梯提升概率
-        float stepUpProb = 0.0f;
-        //保底（必出）抽卡数
+        Map<Integer,BigDecimal> stepUpProb = new LinkedHashMap<>();
+        //700抽前最大概率抽卡数
+        int normalMaxProbNum = 500;
+        //非全图保底（必出）抽卡数
         int maxRollNum = 700;
         String upUnitLevel = rollUnit.getLevel();
         /*SSR概率初始化：
+            TODO SSR阶梯提升相关概率未探明
          * 全图鉴：初始15%持续提升并在500次召唤后提升至100%
          * 非全图鉴：初始的4%持续提升并在500次召唤后提升至20%
          */
         if (YysRoll.SSR.getLevel().equals(upUnitLevel)) {
-            rollProb = fullBuff?0.15f:0.04f;
-            maxProb = fullBuff?1.0f:0.2f;
+            if (fullBuff) {
+                rollProb = new BigDecimal("0.15");
+                maxProb = new BigDecimal("1.0");
+                stepUpProb.put(0, new BigDecimal("0.05"));
+                stepUpProb.put(300, new BigDecimal("0.1"));
+                stepUpProb.put(400,new BigDecimal("0.2"));
+            }else{
+                rollProb = new BigDecimal("0.04");
+                maxProb = new BigDecimal("0.2");
+                stepUpProb.put(0, new BigDecimal("0.01"));
+                stepUpProb.put(150, new BigDecimal("0.02"));
+            }
+            noFullLastMaxProb = new BigDecimal("0.3");
         }
         /*SP概率初始化：
          * 全图鉴：初始10%持续提升并在500次召唤后提升至100%
          * 非全图鉴：初始的3%持续提升并在500次召唤后提升至15%
          */
         else if (YysRoll.SP.getLevel().equals(upUnitLevel)) {
-            rollProb = fullBuff?0.10f:0.03f;
-            maxProb = fullBuff?1.0f:0.15f;
+            if (fullBuff) {
+                rollProb = new BigDecimal("0.10");
+                maxProb = new BigDecimal("1.0");
+                stepUpProb.put(0, new BigDecimal("0.05"));
+                stepUpProb.put(300, new BigDecimal("0.1"));
+                stepUpProb.put(400, new BigDecimal("0.2"));
+            }else{
+                rollProb = new BigDecimal("0.03");
+                maxProb = new BigDecimal("0.15");
+                stepUpProb.put(0, new BigDecimal("0.01"));
+                stepUpProb.put(150, new BigDecimal("0.02"));
+                stepUpProb.put(300, new BigDecimal("0.01"));
+            }
+            noFullLastMaxProb = new BigDecimal("0.25");
+        }
+        BigDecimal upProb ;
+        if (stepUpProb.get(0) != null) {
+            upProb = stepUpProb.get(0);
+        }else {
+            upProb = new BigDecimal(0);
         }
         //抽卡次数
-        int rollNum = 0;
+        int rollNum = 1;
         //概率up
         boolean up = true;
         int upNum = 3;
@@ -228,15 +274,32 @@ public class YysRollServiceImpl implements ExpandRollService {
         levelUnitMap.putAll(rollUnitMap.get(upUnitLevel));
         levelUnitMap.remove(rollUnit.getId());
         //抽卡开始
-        while (rollNum<maxRollNum) {
+        while (true) {
             RollResultUnit rollResultUnit = null;
-            rollNum++;
             String rollLevel = rollLevel(up, UP_RATE);
+            //抽卡次数达到时50的倍数，概率提升
+            if (rollNum % stepUpNum == 0) {
+                BigDecimal tempProb = stepUpProb.get(rollNum);
+                if (tempProb != null) {
+                    upProb = tempProb;
+                }
+                if (rollNum <= normalMaxProbNum) {
+                    rollProb = rollProb.add(upProb).min(maxProb);
+                    tipMap.put(rollNum, "指定UP概率提升至：" + rollProb.scaleByPowerOfTen(2).toString()+ "%");
+                }
+                //非全图抽到700抽时，进一步提升概率
+                if (!fullBuff && rollNum == maxRollNum) {
+                    rollProb = noFullLastMaxProb;
+                    tipMap.put(rollNum, "指定UP概率提升至："+rollProb.scaleByPowerOfTen(2).toString()+"%");
+                }
+            }
+            //抽出高阶式神时
             if (YysRoll.SSR.getLevel().equals(rollLevel) ||  YysRoll.SP.getLevel().equals(rollLevel)){
-
-                //先进行指定概率UP判定
-                if (Math.random() <= rollProb) {
-                    rollResultUnit = (RollResultUnit) rollUnit;
+                //出货时减去Up次数
+                up = upNum-- > 0;
+                //先进行指定式神概率UP判定
+                if (Math.random() <= rollProb.doubleValue()) {
+                    rollResultUnit = new RollResultUnit(rollUnit);
                     rollResultUnit.setSequence(rollNum);
                     rollResultUnit.setUp(up);
                     rollResultUnitList.add(rollResultUnit);
@@ -246,33 +309,38 @@ public class YysRollServiceImpl implements ExpandRollService {
                     }
                     break;
                 }else {
-                    rollResultUnit = (RollResultUnit) rollUnit(levelUnitMap);
+                    rollResultUnit = new RollResultUnit(startRollUnit(levelUnitMap));
+                    rollResultUnit.setUp(up);
                 }
                 //为SSR时抽取皮肤
                 if (YysRoll.SSR.getLevel().equals(rollResultUnit.getLevel()) && rollUnit.getSpecialName() != null) {
                     rollResultUnit.setSpecial(rollSsrSkin());
                 }
-                //出货时减去Up次数
-                up = upNum-- > 0;
             }else {
-                rollResultUnit = (RollResultUnit) rollUnit(rollUnitMap.get(rollLevel));
+                rollResultUnit = new RollResultUnit (startRollUnit(rollUnitMap.get(rollLevel)));
             }
             if (rollResultUnit != null) {
                 rollResultUnit.setSequence(rollNum);
-                rollResultUnit.setUp(up);
                 rollResultUnitList.add(rollResultUnit);
             }
-        }
-        //保底时
-        if (rollNum++ == maxRollNum) {
-            RollResultUnit rollResultUnit = (RollResultUnit) rollUnit;
-            rollResultUnit.setSequence(rollNum);
-            rollResultUnit.setUp(up);
-            rollResultUnitList.add(rollResultUnit);
+            rollNum++;
+            //保底时
+            if (fullBuff&&rollNum==maxRollNum){
+                rollResultUnit = new RollResultUnit(rollUnit);
+                rollResultUnit.setSequence(rollNum);
+                rollResultUnit.setUp(up);
+                rollResultUnitList.add(rollResultUnit);
+                break;
+            }
         }
         //输出结果
         rollResultData.setRollUnitList(rollResultUnitList);
         rollResultData.setRollNum(rollNum);
+        rollResultData.setTipMap(tipMap);
         return rollResultData;
+    }
+
+    public Map<String, Map<Integer, RollUnit>> getRollUnitMap() {
+        return rollUnitMap;
     }
 }

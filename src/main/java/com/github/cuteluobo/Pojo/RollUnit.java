@@ -21,14 +21,26 @@ public class RollUnit {
 
     private Float rollProb;
 
-    public RollUnit(){}
+    public RollUnit(Integer id, String level, String name) {
+        this.id = id;
+        this.level = level;
+        this.name = name;
+    }
+    public RollUnit(RollUnit rollUnit){
+        id = rollUnit.getId();
+        level = rollUnit.getLevel();
+        name = rollUnit.getName();
+        specialName = rollUnit.getSpecialName();
+        rollProb = rollUnit.getRollProb();
+    }
 
     public RollUnit(YysUnit yysUnit) {
-        RollUnit rollUnit = new RollUnit();
-        rollUnit.id = yysUnit.getId();
-        rollUnit.level = yysUnit.getLevel();
-        rollUnit.name = yysUnit.getName();
-        rollUnit.specialName = yysUnit.getSpecialName();
+        if (yysUnit != null) {
+            id = yysUnit.getUnitId();
+            level = yysUnit.getLevel();
+            name = yysUnit.getName();
+            specialName = yysUnit.getSpecialName();
+        }
     }
 
     @Override

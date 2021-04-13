@@ -1,4 +1,4 @@
-package com.github.cuteluobo.Service;
+package com.github.cuteluobo.service;
 
 import com.github.cuteluobo.Pojo.RollImgResult;
 import com.github.cuteluobo.Pojo.RollResultData;

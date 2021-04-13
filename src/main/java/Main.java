@@ -1,9 +1,9 @@
 import cn.pomit.mybatis.configuration.MybatisConfiguration;
-import com.github.cuteluobo.Service.ExpandRollService;
-import com.github.cuteluobo.Service.Impl.YysRollServiceImpl;
-import com.sun.media.jfxmedia.logging.Logger;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
+import com.github.cuteluobo.Pojo.RollUnit;
+import com.github.cuteluobo.Pojo.YysRollResultData;
+import com.github.cuteluobo.service.ExpandRollService;
+import com.github.cuteluobo.service.Impl.YysRollServiceImpl;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
@@ -16,7 +16,14 @@ public class Main {
     public static void main(String[] args) {
         initDatasource();
         ExpandRollService expandRollService = YysRollServiceImpl.INSTANCE;
-        System.out.println(expandRollService.rollText(100, true, null, null, null));
+        RollUnit rollUnit = new RollUnit(363,"SSR","帝释天");
+//        Logger logger = LoggerFactory.getLogger(Main.class);
+        long startTime = System.currentTimeMillis();
+        for (int i = 0; i < 100; i++) {
+            System.out.println(expandRollService.rollTextForSpecifyUnit(rollUnit,false).printResultText(false,true));
+            System.out.println(System.currentTimeMillis()-startTime+"ms");
+        }
+//        System.out.println(expandRollService.rollText(10, true, null, null, null).printResultText(true,true));
     }
 
     private static void initDatasource(){
@@ -28,9 +35,8 @@ public class Main {
         properties.put("mybatis.datasource.url", "jdbc:sqlite:database.sqlite");
         properties.put("mybatis.datasource.username", "");
         properties.put("mybatis.datasource.password", "");
-
         properties.put("mybatis.logImpl","STDOUT_LOGGING");
         MybatisConfiguration.initConfiguration(properties);
-
+        MybatisConfiguration.getSqlSessionFactory().getConfiguration().setMapUnderscoreToCamelCase(true);
     }
 }

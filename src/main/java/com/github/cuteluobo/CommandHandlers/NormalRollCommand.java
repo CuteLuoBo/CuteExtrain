@@ -1,6 +1,7 @@
 package com.github.cuteluobo.CommandHandlers;
 
 import com.github.cuteluobo.CuteExtra;
+import com.github.cuteluobo.service.Impl.YysRollServiceImpl;
 import net.mamoe.mirai.console.command.CommandOwner;
 import net.mamoe.mirai.console.command.CommandSender;
 import net.mamoe.mirai.console.command.SimpleCommand;
@@ -27,11 +28,10 @@ public class NormalRollCommand extends JSimpleCommand {
 
     @Handler
     public void roll(CommandSender sender, String message){
-        boolean up = message != null && message.toLowerCase().indexOf("up")!=-1;
+        boolean up = message != null && message.toLowerCase().contains("up");
         MessageChain chain = new MessageChainBuilder()
                 .append(new At(sender.getUser().getId()))
-                .append("10次"+(up?"(UP)":"")+"抽卡结果")
-                .append("（）")
+                .append(YysRollServiceImpl.INSTANCE.rollText(10, up, null, null, null).printResultText())
                 .build();
         sender.sendMessage(chain);
     }

@@ -9,7 +9,7 @@ version = '0.0.1'
 
 repositories {
     maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
-    maven { url 'https://mirrors.huaweicloud.com/repository/maven' }
+
     maven { url "https://maven.aliyun.com/nexus/content/groups/public" }
     maven { url "https://maven.aliyun.com/nexus/content/repositories/gradle-plugin" }
     mavenCentral()
@@ -25,7 +25,10 @@ dependencies {
     compileOnly "net.mamoe:mirai-console:$miraiConsoleVersion"
     implementation group: 'cn.pomit', name: 'mybatis-proxy', version: '1.1'
     // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
-    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.14.1'
+//    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.14.1'
+    // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-slf4j-impl
+    testImplementation group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.14.1'
+
     implementation group: 'com.amihaiemil.web', name: 'eo-yaml', version: '5.1.6'
     // https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc
     implementation group: 'org.xerial', name: 'sqlite-jdbc', version: '3.34.0'

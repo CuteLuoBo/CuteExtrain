@@ -71,15 +71,18 @@ public final class CuteExtra extends JavaPlugin {
     }
 
     private void initDatasource(){
-        Properties  properties= new Properties();
-		properties.put("mybatis.mapper.scan", "com.github.cuteluobo.mapper");
-		properties.put("mybatis.datasource.type", "POOLED");
-		properties.put("mybatis.datasource.driver", "org.sqlite.JDBC");
-		//TODO 增加从配置文件读取并使用mysql数据库配置方式
-		properties.put("mybatis.datasource.url", "jdbc:sqlite:database.sqlite");
-		properties.put("mybatis.datasource.username", "");
-		properties.put("mybatis.datasource.password", "");
+        Properties properties= new Properties();
+        properties.put("mybatis.mapper.scan", "com.github.cuteluobo.mapper");
+        properties.put("mybatis.datasource.type", "POOLED");
+        properties.put("mybatis.datasource.driver", "org.sqlite.JDBC");
+        //TODO 增加从配置文件读取并使用mysql数据库配置方式
+        properties.put("mybatis.datasource.url", "jdbc:sqlite:database.sqlite");
+        properties.put("mybatis.datasource.username", "");
+        properties.put("mybatis.datasource.password", "");
+        properties.setProperty("mapUnderscoreToCamelCase", "true");
+        properties.put("mybatis.logImpl","STDOUT_LOGGING");
         MybatisConfiguration.initConfiguration(properties);
+        MybatisConfiguration.getSqlSessionFactory().getConfiguration().setMapUnderscoreToCamelCase(true);
     }
 
 }          

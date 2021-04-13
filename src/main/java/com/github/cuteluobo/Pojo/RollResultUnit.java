@@ -6,7 +6,14 @@ package com.github.cuteluobo.Pojo;
  */
 public class RollResultUnit extends RollUnit {
 
-    private Boolean up;
+    public RollResultUnit(Integer id, String level, String name) {
+        super(id,level,name);
+    }
+    public RollResultUnit(RollUnit rollUnit) {
+        super(rollUnit);
+    }
+
+    private Boolean up = false;
 
     /**
      * 特殊状态
@@ -43,9 +50,9 @@ public class RollResultUnit extends RollUnit {
 
     @Override
     public String toString() {
-        final StringBuffer sb = new StringBuffer("RollResultUnit{");
+        final StringBuffer sb = new StringBuffer();
         sb.append("第").append(sequence).append("抽:")
-                .append(getLevel()).append(" ").append(special?getName():getSpecialName()).append(up?"(UP)":"");
+                .append(getLevel()).append(" ").append(!special?getName():getSpecialName()).append(up?"(UP)":"");
         return sb.toString();
     }
 }
