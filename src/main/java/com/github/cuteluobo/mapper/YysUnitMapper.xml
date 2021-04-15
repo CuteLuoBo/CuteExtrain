@@ -3,7 +3,7 @@
 <mapper namespace="com.github.cuteluobo.mapper.YysUnitMapper">
   <resultMap id="BaseResultMap" type="com.github.cuteluobo.model.YysUnit">
     <!--@mbg.generated-->
-    <!--@Table YysUnit-->
+    <!--@Table unit_yys-->
     <id column="id" jdbcType="INTEGER" property="id" />
     <result column="unit_id" jdbcType="INTEGER" property="unitId" />
     <result column="level" jdbcType="LONGVARCHAR" property="level" />
@@ -16,6 +16,6 @@
     id, unit_id, "level", "name", special_name, can_roll
   </sql>
   <select id="selectList" resultMap="BaseResultMap">
-    SELECT <include refid="Base_Column_List" /> FROM YysUnit WHERE can_roll = #{canRoll}
+    SELECT <include refid="Base_Column_List" /> FROM unit_yys WHERE can_roll = #{canRoll}
     </select>
 </mapper>
