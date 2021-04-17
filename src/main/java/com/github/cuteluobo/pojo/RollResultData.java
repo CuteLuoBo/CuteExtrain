@@ -1,6 +1,4 @@
-package com.github.cuteluobo.Pojo;
-
-import com.github.cuteluobo.enums.YysRoll;
+package com.github.cuteluobo.pojo;
 
 import java.util.List;
 import java.util.Map;

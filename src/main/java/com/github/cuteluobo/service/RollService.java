@@ -1,7 +1,7 @@
 package com.github.cuteluobo.service;
 
-import com.github.cuteluobo.Pojo.RollImgResult;
-import com.github.cuteluobo.Pojo.RollResultData;
+import com.github.cuteluobo.pojo.RollImgResult;
+import com.github.cuteluobo.pojo.RollResultData;
 import org.jetbrains.annotations.NotNull;
 
 /**

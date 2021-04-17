@@ -1,7 +1,7 @@
 package com.github.cuteluobo.service.Impl;
 
 import cn.pomit.mybatis.ProxyHandlerFactory;
-import com.github.cuteluobo.Pojo.*;
+import com.github.cuteluobo.pojo.*;
 import com.github.cuteluobo.service.ExpandRollService;
 import com.github.cuteluobo.enums.YysRoll;
 import com.github.cuteluobo.mapper.YysUnitMapper;
@@ -285,12 +285,14 @@ public class YysRollServiceImpl implements ExpandRollService {
                 }
                 if (rollNum <= normalMaxProbNum) {
                     rollProb = rollProb.add(upProb).min(maxProb);
-                    tipMap.put(rollNum, "指定UP概率提升至：" + rollProb.scaleByPowerOfTen(2).toString()+ "%");
+                    String probString = rollProb.movePointRight(2).toString();
+                    tipMap.put(rollNum, "第"+rollNum+"抽后->指定UP概率提升至：" + probString+ "%");
                 }
                 //非全图抽到700抽时，进一步提升概率
                 if (!fullBuff && rollNum == maxRollNum) {
                     rollProb = noFullLastMaxProb;
-                    tipMap.put(rollNum, "指定UP概率提升至："+rollProb.scaleByPowerOfTen(2).toString()+"%");
+                    String probString = rollProb.movePointRight(2).toString();
+                    tipMap.put(rollNum,"第"+rollNum+"抽后->指定UP概率提升至："+probString+"%");
                 }
             }
             //抽出高阶式神时

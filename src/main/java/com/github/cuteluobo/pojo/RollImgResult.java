@@ -1,4 +1,4 @@
-package com.github.cuteluobo.Pojo;
+package com.github.cuteluobo.pojo;
 
 /**
  * @author CuteLuoBo

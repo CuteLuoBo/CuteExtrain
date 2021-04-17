@@ -1,10 +1,7 @@
 import cn.pomit.mybatis.configuration.MybatisConfiguration;
-import com.github.cuteluobo.Pojo.RollUnit;
-import com.github.cuteluobo.Pojo.YysRollResultData;
+import com.github.cuteluobo.pojo.RollUnit;
 import com.github.cuteluobo.service.ExpandRollService;
 import com.github.cuteluobo.service.Impl.YysRollServiceImpl;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
 
@@ -19,7 +16,8 @@ public class Main {
         RollUnit rollUnit = new RollUnit(363,"SSR","帝释天");
 //        Logger logger = LoggerFactory.getLogger(Main.class);
         long startTime = System.currentTimeMillis();
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 1; i++) {
+            System.out.println(rollUnit.getLevel()+"-"+rollUnit.getName()+" 追梦结果：");
             System.out.println(expandRollService.rollTextForSpecifyUnit(rollUnit,false).printResultText(false,true));
             System.out.println(System.currentTimeMillis()-startTime+"ms");
         }

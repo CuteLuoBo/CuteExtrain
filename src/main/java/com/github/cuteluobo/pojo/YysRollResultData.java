@@ -1,4 +1,4 @@
-package com.github.cuteluobo.Pojo;
+package com.github.cuteluobo.pojo;
 
 import com.github.cuteluobo.enums.YysRoll;
 
@@ -19,7 +19,8 @@ public class YysRollResultData extends RollResultData {
     @Override
     public String printResultText(boolean showAllLevel, boolean hideLowLevelDetail){
         final StringBuffer sb = new StringBuffer();
-        sb.append(getRollNum()).append("次抽卡结果:").append("\n");
+        //开头语改为由外部定义
+//        sb.append(getRollNum()).append("次抽卡结果:").append("\n");
         List<RollResultUnit> rollResultUnitList = getRollUnitList();
         if (rollResultUnitList==null || rollResultUnitList.size()==0){
             sb.append("无事发生");
@@ -27,13 +28,14 @@ public class YysRollResultData extends RollResultData {
             int rLevelNum = 0;
             int srLevelNum = 0;
             if (!showAllLevel) {
-                for (RollResultUnit rollResultUnit : rollResultUnitList) {
+                for (int i = 0; i < rollResultUnitList.size(); i++) {
+                    RollResultUnit rollResultUnit = rollResultUnitList.get(i);
                     if (YysRoll.SSR.getLevel().equals(rollResultUnit.getLevel()) || YysRoll.SSR.getLevel().equals(rollResultUnit.getLevel())) {
                         sb.append(rollResultUnit).append("\n");
-                        String tipText = getTipMap().get(rollResultUnit.getSequence());
-                        if (tipText != null) {
-                            sb.append(tipText).append("\n");
-                        }
+                    }
+                    String tipText = getTipMap().get(i);
+                    if (tipText != null) {
+                        sb.append(tipText).append("\n");
                     }
                     if (YysRoll.SR.getLevel().equals(rollResultUnit.getLevel())) {
                         srLevelNum++;

@@ -1,7 +1,7 @@
 package com.github.cuteluobo.service;
 
-import com.github.cuteluobo.Pojo.RollResultData;
-import com.github.cuteluobo.Pojo.RollUnit;
+import com.github.cuteluobo.pojo.RollResultData;
+import com.github.cuteluobo.pojo.RollUnit;
 
 /**
  * @author CuteLuoBo
