@@ -20,4 +20,13 @@ public interface YysUnitMapper {
      */
     @Select("SELECT * FROM unit_yys WHERE can_roll = #{canRoll}")
     public List<YysUnit> selectList(Boolean canRoll);
+
+    /**
+     * 查询式神
+     * @param name    式神名称
+     * @param canRoll 筛选可抽取
+     * @return 查询列表
+     */
+    @Select("SELECT * FROM unit_yys WHERE name Like CONCAT(name,'%') AND can_roll = #{canRoll} LIMIT 1")
+    public YysUnit selectOneByName(String name,Boolean canRoll);
 }

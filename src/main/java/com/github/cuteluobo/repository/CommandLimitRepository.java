@@ -4,48 +4,84 @@ import cn.pomit.mybatis.ProxyHandlerFactory;
 import com.github.cuteluobo.mapper.CommandLimitMapper;
 import com.github.cuteluobo.model.CommandLimit;
 import com.github.cuteluobo.untils.CommandLimitUntil;
+import io.ktor.util.Hash;
 import net.mamoe.mirai.console.command.CommandSender;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 权限缓存类
+ *
  * @author CuteLuoBo
  */
 public class CommandLimitRepository {
     private CommandLimitMapper commandLimitMapper;
-    private static CommandLimitRepository INSTANCE ;
-    /**
-     * <群号，<个人号，权限对象>>
-     */
-    private Map<Long, Map<Long, CommandLimit>> tempMap = new HashMap<>();
+    private static CommandLimitRepository INSTANCE;
+//    /**
+//     * <群号，<个人号，权限对象>>
+//     */
+//    private Map<Long, Map<Long, Map<String,CommandLimit>>> tempMap = new HashMap<>();
 
+    /**
+     //     * <群号+个人号+权限名称，权限对象>>
+     //     */
+    private Map<String, CommandLimit> tempMap ;
+
+    /**
+     * ID中代表所有的替代符
+     */
+    public static final long ALL_ID = 0;
+    /**
+     * 指令中代表所有的替代符
+     */
+    public static final String ALL_COMMAND = "*";
 
     /**
      * 初始化，进行数据缓存
      */
-    private CommandLimitRepository(){
+    private CommandLimitRepository() {
         commandLimitMapper = ProxyHandlerFactory.getMapper(CommandLimitMapper.class);
+        tempMap = new ConcurrentHashMap<>();
         List<CommandLimit> commandLimitList = commandLimitMapper.selectList();
         for (CommandLimit commandLimit :
                 commandLimitList
         ) {
-            //WRAN 返回Null时可能会有问题？
-            long groupId = commandLimit.getGroupId();
-            Map<Long, CommandLimit> groupLimitMap = tempMap.get(groupId);
-            if (groupLimitMap == null) {
-                groupLimitMap = new HashMap<>();
-            }
-            groupLimitMap.put(commandLimit.getUserId(), commandLimit);
-            tempMap.put(groupId, groupLimitMap);
+            Long groupId = commandLimit.getGroupId();
+            Long userId = commandLimit.getUserId();
+            String primary = commandLimit.getPrimary();
+            tempMap.put(createKey(groupId,userId,primary), commandLimit);
         }
+    }
+
+    /**
+     * 创建专用key
+     * @param groupId 群ID
+     * @param userId 用户ID
+     * @param primary 指令字符串
+     * @return 创建结果
+     */
+    public static String createKey(Long groupId, Long userId, String primary) {
+        if (groupId == null) {
+            groupId = ALL_ID;
+        }
+        if (userId == null) {
+            userId = ALL_ID;
+        }
+        if (primary == null) {
+            primary = ALL_COMMAND;
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append(groupId).append(".").append(userId).append(".").append(primary);
+        return sb.toString();
     }
 
 
     /**
      * 获取单例
+     *
      * @return 单例
      */
     public static CommandLimitRepository getInstance() {
@@ -54,4 +90,17 @@ public class CommandLimitRepository {
         }
         return INSTANCE;
     }
+
+
+    /**
+     * 获取指令限制对象
+     * @param groupId 群ID
+     * @param userId 用户ID
+     * @param primary 指令字符串
+     * @return 指令限制对象，无对应结果时为null
+     */
+    public CommandLimit getCommandLimit(Long groupId, Long userId,String primary) {
+        return tempMap.get(createKey(groupId, userId, primary));
+    }
+
 }

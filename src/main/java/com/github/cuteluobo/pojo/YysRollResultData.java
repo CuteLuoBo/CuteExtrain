@@ -56,7 +56,6 @@ public class YysRollResultData extends RollResultData {
                     }
                 }
             }
-            //TODO 增加低阶输出（转换到子对象）
         }
         return sb.toString();
     }

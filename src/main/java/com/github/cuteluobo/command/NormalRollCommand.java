@@ -12,7 +12,7 @@ import net.mamoe.mirai.message.data.MessageChainBuilder;
 import org.aspectj.lang.annotation.Aspect;
 
 /**
- * 常规抽卡指令
+ * 常规抽卡指令-废弃
  * @author CuteLuoBo
  * @date 2021-04-07
  */
@@ -27,22 +27,18 @@ public class NormalRollCommand extends JSimpleCommand {
     }
 
     @Handler
-    public void roll(CommandSender sender,Integer rollNum, String message){
-        if (sender instanceof MemberCommandSender) {
-            MemberCommandSender memberCommandSender = (MemberCommandSender) sender;
-            long groupId = memberCommandSender.getGroup().getId();
-
-        }
+    public Boolean roll(CommandSender sender,Integer rollNum, String message){
         boolean up = message != null && message.toLowerCase().contains("up");
         MessageChain chain = new MessageChainBuilder()
                 .append(new At(sender.getUser().getId()))
                 .append(YysRollServiceImpl.INSTANCE.rollText(10, up, null, null, null).printResultText())
                 .build();
         sender.sendMessage(chain);
+        return true;
     }
 
     @Handler
-    public void roll(CommandSender sender,Integer rollNum){
-        roll(sender,rollNum, null);
+    public Boolean roll(CommandSender sender,Integer rollNum){
+        return roll(sender,rollNum, null);
     }
 }

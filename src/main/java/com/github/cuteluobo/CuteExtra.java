@@ -1,9 +1,14 @@
 package com.github.cuteluobo;
 
+import cn.pomit.mybatis.ProxyHandlerFactory;
 import cn.pomit.mybatis.configuration.MybatisConfiguration;
 import cn.pomit.mybatis.configuration.MybatisProperties;
+import com.github.cuteluobo.command.RollCommand;
+import com.github.cuteluobo.enums.DatabaseTable;
+import com.github.cuteluobo.mapper.SystemMapper;
 import kotlin.coroutines.CoroutineContext;
 import kotlinx.coroutines.Job;
+import net.mamoe.mirai.console.command.Command;
 import net.mamoe.mirai.console.permission.PermissionId;
 import net.mamoe.mirai.console.permission.PermissionRegistryConflictException;
 import net.mamoe.mirai.console.permission.PermissionService;
@@ -14,10 +19,12 @@ import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.message.MessageReceipt;
 import net.mamoe.mirai.message.data.*;
 import net.mamoe.mirai.utils.MiraiLogger;
+import org.apache.ibatis.jdbc.SqlRunner;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 import java.io.File;
+import java.sql.SQLException;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -48,7 +55,7 @@ public final class CuteExtra extends JavaPlugin {
 
 
 
-    public void onLoad() {
+    public void onLoad() throws SQLException {
         initDatasource();
     }
 
@@ -63,14 +70,15 @@ public final class CuteExtra extends JavaPlugin {
 
     /**初始化权限*/
     private void permissionExecute() throws PermissionRegistryConflictException {
-        PermissionService.getInstance().register(new PermissionId("CuteExtra","normal"),"插件默认权限",null);
+//        PermissionService.getInstance().register(new PermissionId("CuteExtra","normal"),"插件默认权限",null);
     }
 
     private void commandReg(){
-
+        //TODO 解决指令注册问题
+        RollCommand rollCommand = new RollCommand();
     }
 
-    private void initDatasource(){
+    private void initDatasource() throws SQLException {
         try {
             logger.info("开始加载数据库配置");
             Properties properties= new Properties();
@@ -85,11 +93,29 @@ public final class CuteExtra extends JavaPlugin {
             properties.put("mybatis.logImpl","STDOUT_LOGGING");
             MybatisConfiguration.initConfiguration(properties);
             MybatisConfiguration.getSqlSessionFactory().getConfiguration().setMapUnderscoreToCamelCase(true);
-        } catch (Exception e) {
+            SystemMapper systemMapper = ProxyHandlerFactory.getMapper(SystemMapper.class);
+            Boolean noUseSchema = true;
+            for (DatabaseTable d :
+                    DatabaseTable.values()) {
+                noUseSchema &= systemMapper.existTable(d.getTableName());
+            }
+            //TODO 初始化数据库需要DEBUG查看问题
+            //有表名不存在时
+            if (!noUseSchema) {
+                logger.info("数据表不存在，进行初始化");
+                String sql = getResource("schema.sql");
+                if (sql == null) {
+                    logger.error("数据表初始化失败，无法读取内置SQL");
+                }
+                SqlRunner sqlRunner = new SqlRunner(MybatisConfiguration.getSqlSessionFactory().openSession().getConnection());
+                sqlRunner.run(sql);
+                logger.info("初始化数据表完成");
+            }
+        } catch (SQLException e) {
             logger.error("初始化数据库配置失败，请检查配置");
             throw e;
         }
-        logger.info("加载数据库配置完成");
+        logger.info("加载数据库完成");
     }
 
 }          

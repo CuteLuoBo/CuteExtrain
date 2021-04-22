@@ -30,7 +30,6 @@ public class YysRollServiceImpl implements ExpandRollService {
     private YysRollServiceImpl(){
        yysUnitMapper = ProxyHandlerFactory.getMapper(YysUnitMapper.class);
        //填充卡池式神数据
-        //TODO 配置Mybatis日志打印并排除无查询数据问题
         List<YysUnit> yysUnitList = yysUnitMapper.selectList(true);
         if (yysUnitList != null) {
             for (YysUnit yysUnit :
@@ -219,7 +218,6 @@ public class YysRollServiceImpl implements ExpandRollService {
         int maxRollNum = 700;
         String upUnitLevel = rollUnit.getLevel();
         /*SSR概率初始化：
-            TODO SSR阶梯提升相关概率未探明
          * 全图鉴：初始15%持续提升并在500次召唤后提升至100%
          * 非全图鉴：初始的4%持续提升并在500次召唤后提升至20%
          */
@@ -234,7 +232,8 @@ public class YysRollServiceImpl implements ExpandRollService {
                 rollProb = new BigDecimal("0.04");
                 maxProb = new BigDecimal("0.2");
                 stepUpProb.put(0, new BigDecimal("0.01"));
-                stepUpProb.put(150, new BigDecimal("0.02"));
+                stepUpProb.put(400, new BigDecimal("0.03"));
+                stepUpProb.put(450, new BigDecimal("0.05"));
             }
             noFullLastMaxProb = new BigDecimal("0.3");
         }
