@@ -6,13 +6,27 @@ import com.github.cuteluobo.mapper.YysUnitMapper;
 import com.github.cuteluobo.model.YysUnit;
 import com.github.cuteluobo.pojo.RollUnit;
 import com.github.cuteluobo.service.Impl.YysRollServiceImpl;
+import kotlin.reflect.KClass;
 import net.mamoe.mirai.console.command.*;
+import net.mamoe.mirai.console.command.descriptor.CommandArgumentContext;
+import net.mamoe.mirai.console.command.descriptor.CommandValueArgumentParser;
+import net.mamoe.mirai.console.command.descriptor.SimpleCommandArgumentContext;
 import net.mamoe.mirai.console.permission.Permission;
+import net.mamoe.mirai.console.permission.PermissionId;
+import net.mamoe.mirai.console.permission.PermissionRegistryConflictException;
+import net.mamoe.mirai.console.permission.PermissionService;
+import net.mamoe.mirai.contact.User;
 import net.mamoe.mirai.message.MessageReceipt;
 import net.mamoe.mirai.message.data.At;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.MessageChainBuilder;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
+import java.util.Objects;
+
+import static com.github.cuteluobo.CuteExtra.basePermission;
 
 /**
  * https://github.com/mamoe/mirai-console/blob/master/docs/Commands.md
@@ -21,12 +35,12 @@ import org.jetbrains.annotations.NotNull;
  */
 public class RollCommand extends CompositeCommand {
     private static String[] secondCommand = {"阴阳师抽卡","yr"};
+    private static final String PRIMARY = "yroll";
 
     /**指令初始化*/
-    public RollCommand() {
-        super(CuteExtra.INSTANCE, "yroll", secondCommand, "/yroll 10",Permission.getRootPermission(),null);
+    public RollCommand() throws PermissionRegistryConflictException {
+        super(CuteExtra.INSTANCE, PRIMARY, secondCommand, "/yroll n 10", PermissionService.getInstance().register(new PermissionId(CuteExtra.PLUGIN_ID,PRIMARY),"阴阳师抽卡权限",CuteExtra.basePermission), SimpleCommandArgumentContext.EMPTY);
     }
-    //TODO 增加抽卡指令
 
     /**
      * 常规抽卡
@@ -37,12 +51,27 @@ public class RollCommand extends CompositeCommand {
     @SubCommand({"normal","n","普通"})
     public Boolean normal(@NotNull CommandSender sender,Integer rollNum, String message){
         boolean up = message != null && message.toLowerCase().contains("up");
-        MessageChain chain = new MessageChainBuilder()
-                .append(new At(sender.getUser().getId()))
-                .append(YysRollServiceImpl.INSTANCE.rollText(rollNum, up, null, null, null).printResultText())
-                .build();
-        sender.sendMessage(chain);
+        //设置最大单次500抽
+        rollNum = Math.min(rollNum, 500);
+        MessageChainBuilder chainBuilder = new MessageChainBuilder();
+        User user = sender.getUser();
+        if (user != null) {
+            chainBuilder.append(new At(user.getId())+"\n");
+        }
+        chainBuilder.append(rollNum+"抽"+(up?"UP":"")+ "模拟抽卡结果：\n");
+        chainBuilder.append(YysRollServiceImpl.INSTANCE.rollText(rollNum, up, null, null, null).printResultText());
+        sender.sendMessage(chainBuilder.build());
         return true;
+    }
+
+    /**
+     * 常规抽卡
+     * @param sender 消息发送者
+     * @param rollNum 抽卡次数
+     */
+    @SubCommand({"normal","n","普通"})
+    public Boolean normal(@NotNull CommandSender sender,Integer rollNum){
+        return normal(sender, rollNum, null);
     }
 
     /**
@@ -52,43 +81,55 @@ public class RollCommand extends CompositeCommand {
      * @param arg2  是否全图
      * @return
      */
-    @SubCommand({"assign","a","追梦"})
+    @SubCommand({"assign","a","定向"})
     public Boolean assign(@NotNull CommandSender sender,String arg1,String arg2){
         YysUnitMapper yysUnitMapper = ProxyHandlerFactory.getMapper(YysUnitMapper.class);
         if (arg1 == null) {
-            MessageChain chain = new MessageChainBuilder()
-                    .append(new At(sender.getUser().getId()))
-                    .append("你没有输入指定UP的式神名称")
-                    .build();
-            sender.sendMessage(chain);
+            sender.sendMessage(buildNormalMessage(sender, "你没有输入指定UP的式神名称"));
             return false;
         }
         try {
             //获取指定式神
-            YysUnit yysUnit = yysUnitMapper.selectOneByName(arg1, false);
+            YysUnit yysUnit = yysUnitMapper.selectOneByName(arg1, true);
             if (yysUnit == null) {
-                sender.sendMessage(buildNormalMessage(sender.getUser().getId(),"没有找到对应式神"));
+                sender.sendMessage(buildNormalMessage(sender,"没有找到对应式神"));
             }
             //全图鉴BUFF
             boolean allBuff = arg2 != null && arg2.contains("全图");
             //发送信息
-            MessageChain chain = new MessageChainBuilder()
-                    .append(new At(sender.getUser().getId()))
-                    .append(YysRollServiceImpl.INSTANCE.rollTextForSpecifyUnit(new RollUnit(yysUnit),allBuff).printResultText())
-                    .build();
-            sender.sendMessage(chain);
+            MessageChainBuilder chainBuilder = new MessageChainBuilder();
+            User user = sender.getUser();
+            if (user != null) {
+                chainBuilder.append(new At(user.getId())+"\n");
+            }
+            chainBuilder.append("定向概率UP："+yysUnit.getName()+"("+(allBuff?"全图鉴":"非全图")+") 模拟抽卡结果：\n");
+            chainBuilder.append(YysRollServiceImpl.INSTANCE.rollTextForSpecifyUnit(new RollUnit(yysUnit), allBuff).printResultText());
+            sender.sendMessage(chainBuilder.build());
             return true;
         } catch (Exception e) {
-            sender.sendMessage(buildNormalMessage(sender.getUser().getId(),"查询式神错误"));
+            sender.sendMessage(buildNormalMessage(sender,"查询式神错误"));
             throw e;
         }
     }
 
-    private MessageChain buildNormalMessage(Long userId,String message) {
-        MessageChain chain = new MessageChainBuilder()
-                .append(new At(userId))
-                .append("你没有输入指定UP的式神名称")
-                .build();
-        return chain;
+    /**
+     * 指定抽卡
+     * @param sender 消息发送者
+     * @param arg1   式神名称
+     * @return
+     */
+    @SubCommand({"assign","a","追梦"})
+    public Boolean assign(@NotNull CommandSender sender,String arg1){
+        return assign(sender, arg1, null);
+    }
+
+    private MessageChain buildNormalMessage(CommandSender sender,String message) {
+        MessageChainBuilder chainBuilder = new MessageChainBuilder();
+        User user = sender.getUser();
+        if (user != null) {
+            chainBuilder.append(new At(user.getId())+"\n");
+        }
+        chainBuilder.append(message);
+        return chainBuilder.build();
     }
 }

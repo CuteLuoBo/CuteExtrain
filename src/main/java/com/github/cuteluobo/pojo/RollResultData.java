@@ -1,5 +1,7 @@
 package com.github.cuteluobo.pojo;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -12,14 +14,14 @@ public abstract class RollResultData {
     /**
      * 抽卡结果数组
      */
-    private List<RollResultUnit> rollResultUnitList;
+    private List<RollResultUnit> rollResultUnitList = new ArrayList<>();
 
     /**
      * 抽取提示(在多少抽后面插入)
      * <抽取次数，提示语>
      */
-    private Map<Integer, String> tipMap;
-    private Integer rollNum;
+    private Map<Integer, String> tipMap = new HashMap<>();
+    private Integer rollNum = 0;
 
     /**
      * 打印抽取结果

@@ -18,7 +18,7 @@ public interface YysUnitMapper {
      * @param canRoll 筛选可抽取
      * @return 查询列表
      */
-    @Select("SELECT * FROM unit_yys WHERE can_roll = #{canRoll}")
+    @Select("SELECT * FROM unit_yys WHERE can_roll = #{arg0}")
     public List<YysUnit> selectList(Boolean canRoll);
 
     /**
@@ -27,6 +27,6 @@ public interface YysUnitMapper {
      * @param canRoll 筛选可抽取
      * @return 查询列表
      */
-    @Select("SELECT * FROM unit_yys WHERE name Like CONCAT(name,'%') AND can_roll = #{canRoll} LIMIT 1")
+    @Select("SELECT * FROM unit_yys WHERE name Like #{arg0}||'%' AND can_roll = #{arg1} LIMIT 1")
     public YysUnit selectOneByName(String name,Boolean canRoll);
 }

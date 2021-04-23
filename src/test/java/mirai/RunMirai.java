@@ -1,9 +1,9 @@
 package mirai;
 
-import kotlinx.coroutines.BuildersKt;
-import kotlinx.coroutines.GlobalScope;
-import net.mamoe.mirai.console.command.CommandManager;
-import net.mamoe.mirai.console.pure.MiraiConsolePureLoader;
+import com.github.cuteluobo.CuteExtra;
+import net.mamoe.mirai.console.plugin.PluginManager;
+import net.mamoe.mirai.console.terminal.MiraiConsoleImplementationTerminal;
+import net.mamoe.mirai.console.terminal.MiraiConsoleTerminalLoader;
 
 public class RunMirai {
    
@@ -12,9 +12,10 @@ public class RunMirai {
     public static void main(String[] args) throws InterruptedException {
         // 默认在 /test 目录下运行
 
-        MiraiConsolePureLoader.load(args[0], args[1]); // 启动 console
-
-        // 阻止主线程退出
-        BuildersKt.runBlocking(GlobalScope.INSTANCE.getCoroutineContext(), (coroutineScope, continuation) -> CommandManager.INSTANCE.join(continuation));
+        MiraiConsoleTerminalLoader.INSTANCE.startAsDaemon(new MiraiConsoleImplementationTerminal()); // 启动 console
+        PluginManager.INSTANCE.loadPlugin(CuteExtra.INSTANCE);
+        PluginManager.INSTANCE.enablePlugin(CuteExtra.INSTANCE);
+//        // 阻止主线程退出
+//        BuildersKt.runBlocking(GlobalScope.INSTANCE.getCoroutineContext(), (coroutineScope, continuation) -> CommandManager.INSTANCE.registerCommand(continuation,false));
     }
 }

@@ -285,13 +285,13 @@ public class YysRollServiceImpl implements ExpandRollService {
                 if (rollNum <= normalMaxProbNum) {
                     rollProb = rollProb.add(upProb).min(maxProb);
                     String probString = rollProb.movePointRight(2).toString();
-                    tipMap.put(rollNum, "第"+rollNum+"抽后->指定UP概率提升至：" + probString+ "%");
+                    tipMap.put(rollNum, rollNum+"->定向提升：" + probString+ "%");
                 }
                 //非全图抽到700抽时，进一步提升概率
                 if (!fullBuff && rollNum == maxRollNum) {
                     rollProb = noFullLastMaxProb;
                     String probString = rollProb.movePointRight(2).toString();
-                    tipMap.put(rollNum,"第"+rollNum+"抽后->指定UP概率提升至："+probString+"%");
+                    tipMap.put(rollNum,rollNum+"定向提升："+probString+"%");
                 }
             }
             //抽出高阶式神时
