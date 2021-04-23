@@ -30,7 +30,7 @@ public class YysRollResultData extends RollResultData {
             if (!showAllLevel) {
                 for (int i = 0; i < rollResultUnitList.size(); i++) {
                     RollResultUnit rollResultUnit = rollResultUnitList.get(i);
-                    if (YysRoll.SSR.getLevel().equals(rollResultUnit.getLevel()) || YysRoll.SSR.getLevel().equals(rollResultUnit.getLevel())) {
+                    if (YysRoll.SSR.getLevel().equals(rollResultUnit.getLevel()) || YysRoll.SP.getLevel().equals(rollResultUnit.getLevel())) {
                         sb.append(rollResultUnit).append("\n");
                     }
                     String tipText = getTipMap().get(i);

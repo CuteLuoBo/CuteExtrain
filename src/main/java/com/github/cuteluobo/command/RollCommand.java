@@ -77,25 +77,26 @@ public class RollCommand extends CompositeCommand {
     /**
      * 指定抽卡
      * @param sender 消息发送者
-     * @param arg1   式神名称
-     * @param arg2  是否全图
+     * @param unitName   式神名称
+     * @param isAll  是否全图
      * @return
      */
     @SubCommand({"assign","a","定向"})
-    public Boolean assign(@NotNull CommandSender sender,String arg1,String arg2){
+    public Boolean assign(@NotNull CommandSender sender,String unitName,String isAll){
         YysUnitMapper yysUnitMapper = ProxyHandlerFactory.getMapper(YysUnitMapper.class);
-        if (arg1 == null) {
+        if (unitName == null) {
             sender.sendMessage(buildNormalMessage(sender, "你没有输入指定UP的式神名称"));
             return false;
         }
         try {
             //获取指定式神
-            YysUnit yysUnit = yysUnitMapper.selectOneByName(arg1, true);
+            YysUnit yysUnit = yysUnitMapper.selectOneByName(unitName, true);
             if (yysUnit == null) {
                 sender.sendMessage(buildNormalMessage(sender,"没有找到对应式神"));
+                return false;
             }
             //全图鉴BUFF
-            boolean allBuff = arg2 != null && arg2.contains("全图");
+            boolean allBuff = isAll != null && isAll.contains("全图");
             //发送信息
             MessageChainBuilder chainBuilder = new MessageChainBuilder();
             User user = sender.getUser();
