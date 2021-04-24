@@ -15,11 +15,11 @@ import net.mamoe.mirai.console.permission.Permission;
 import net.mamoe.mirai.console.permission.PermissionId;
 import net.mamoe.mirai.console.permission.PermissionRegistryConflictException;
 import net.mamoe.mirai.console.permission.PermissionService;
+import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.User;
+import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.MessageReceipt;
-import net.mamoe.mirai.message.data.At;
-import net.mamoe.mirai.message.data.MessageChain;
-import net.mamoe.mirai.message.data.MessageChainBuilder;
+import net.mamoe.mirai.message.data.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -39,7 +39,7 @@ public class RollCommand extends CompositeCommand {
 
     /**指令初始化*/
     public RollCommand() throws PermissionRegistryConflictException {
-        super(CuteExtra.INSTANCE, PRIMARY, secondCommand, "/yroll n 10", PermissionService.getInstance().register(new PermissionId(CuteExtra.PLUGIN_ID,PRIMARY),"阴阳师抽卡权限",CuteExtra.basePermission), SimpleCommandArgumentContext.EMPTY);
+        super(CuteExtra.INSTANCE, PRIMARY, secondCommand, "/yroll n 10", PermissionService.getInstance().register(new PermissionId(CuteExtra.PLUGIN_ID,PRIMARY),"阴阳师抽卡权限",CuteExtra.INSTANCE.getParentPermission()), SimpleCommandArgumentContext.EMPTY);
     }
 
     /**
@@ -56,7 +56,8 @@ public class RollCommand extends CompositeCommand {
         MessageChainBuilder chainBuilder = new MessageChainBuilder();
         User user = sender.getUser();
         if (user != null) {
-            chainBuilder.append(new At(user.getId())+"\n");
+            chainBuilder.append(new At(user.getId()));
+            chainBuilder.append("\n");
         }
         chainBuilder.append(rollNum+"抽"+(up?"UP":"")+ "模拟抽卡结果：\n");
         chainBuilder.append(YysRollServiceImpl.INSTANCE.rollText(rollNum, up, null, null, null).printResultText());
@@ -82,7 +83,7 @@ public class RollCommand extends CompositeCommand {
      * @return
      */
     @SubCommand({"assign","a","定向"})
-    public Boolean assign(@NotNull CommandSender sender,String unitName,String isAll){
+    public Boolean assign(@NotNull  CommandSender sender, String unitName, String isAll){
         YysUnitMapper yysUnitMapper = ProxyHandlerFactory.getMapper(YysUnitMapper.class);
         if (unitName == null) {
             sender.sendMessage(buildNormalMessage(sender, "你没有输入指定UP的式神名称"));
@@ -98,10 +99,14 @@ public class RollCommand extends CompositeCommand {
             //全图鉴BUFF
             boolean allBuff = isAll != null && isAll.contains("全图");
             //发送信息
+
+
             MessageChainBuilder chainBuilder = new MessageChainBuilder();
             User user = sender.getUser();
             if (user != null) {
-                chainBuilder.append(new At(user.getId())+"\n");
+//                chainBuilder.append(MessageSource.quote(messageEvent.getMessage()));
+                chainBuilder.append(new At(user.getId()));
+                chainBuilder.append("\n");
             }
             chainBuilder.append("定向概率UP："+yysUnit.getName()+"("+(allBuff?"全图鉴":"非全图")+") 模拟抽卡结果：\n");
             chainBuilder.append(YysRollServiceImpl.INSTANCE.rollTextForSpecifyUnit(new RollUnit(yysUnit), allBuff).printResultText());
@@ -119,8 +124,8 @@ public class RollCommand extends CompositeCommand {
      * @param arg1   式神名称
      * @return
      */
-    @SubCommand({"assign","a","追梦"})
-    public Boolean assign(@NotNull CommandSender sender,String arg1){
+    @SubCommand({"assign","a","定向"})
+    public Boolean assign(@NotNull  CommandSender sender,String arg1){
         return assign(sender, arg1, null);
     }
 
@@ -128,7 +133,8 @@ public class RollCommand extends CompositeCommand {
         MessageChainBuilder chainBuilder = new MessageChainBuilder();
         User user = sender.getUser();
         if (user != null) {
-            chainBuilder.append(new At(user.getId())+"\n");
+            chainBuilder.append(new At(user.getId()));
+            chainBuilder.append("\n");
         }
         chainBuilder.append(message);
         return chainBuilder.build();

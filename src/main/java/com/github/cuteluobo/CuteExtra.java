@@ -15,9 +15,7 @@ import net.mamoe.mirai.console.permission.PermissionService;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescriptionBuilder;
 import net.mamoe.mirai.utils.MiraiLogger;
-import org.apache.ibatis.jdbc.SqlRunner;
 import org.apache.ibatis.session.Configuration;
-import org.apache.ibatis.session.SqlSessionFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,7 +24,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Properties;
 
 /**
@@ -41,7 +38,7 @@ public final class CuteExtra extends JavaPlugin {
 
     private MiraiLogger logger  = getLogger();
     public static final CuteExtra INSTANCE = new CuteExtra();
-
+    public static final String PLUGIN_NAME = "cute-extra 模拟抽卡插件";
     public static final String PLUGIN_ID = "com.github.cuteluobo.cute-extra";
     public static final String PLUGIN_VERSION = "0.3.1-Beta";
     public static final String DATABASE_FILE_NAME = "database.sqlite";
@@ -70,8 +67,9 @@ public final class CuteExtra extends JavaPlugin {
             initDatasource();
             permissionExecute();
             commandReg();
+            logger.info(PLUGIN_NAME+" v"+PLUGIN_VERSION+"加载完成");
         } catch (PermissionRegistryConflictException | SQLException | IOException e) {
-            logger.error("加载插件错误");
+            logger.error(PLUGIN_NAME+" v"+PLUGIN_VERSION+"加载错误，请查看打印信息");
             e.printStackTrace();
         }
     }
@@ -103,11 +101,11 @@ public final class CuteExtra extends JavaPlugin {
                     throw e;
                 }
             }
+        //TODO 增加从配置文件读取并使用mysql数据库配置方式
             Properties properties= new Properties();
             properties.put("mybatis.mapper.scan", "com.github.cuteluobo.mapper");
             properties.put("mybatis.datasource.type", "POOLED");
             properties.put("mybatis.datasource.driver", "org.sqlite.JDBC");
-            //TODO 增加从配置文件读取并使用mysql数据库配置方式
             properties.put("mybatis.datasource.url", "jdbc:sqlite:"+databaseFile.getPath());
             properties.put("mybatis.datasource.username", "");
             properties.put("mybatis.datasource.password", "");

@@ -201,7 +201,7 @@ public class YysRollServiceImpl implements ExpandRollService {
         //初始返回数据对象
         RollResultData rollResultData = new YysRollResultData();
         List<RollResultUnit> rollResultUnitList = new ArrayList<>();
-        Map<Integer, String> tipMap = new HashMap<>();
+        LinkedHashMap<Integer, String> tipMap = new LinkedHashMap<>();
         //当前指定抽取概率
         BigDecimal rollProb = new BigDecimal(0);
         //最大概率
@@ -274,7 +274,7 @@ public class YysRollServiceImpl implements ExpandRollService {
         levelUnitMap.remove(rollUnit.getId());
         //抽卡开始
         while (true) {
-            RollResultUnit rollResultUnit = null;
+            RollResultUnit rollResultUnit;
             String rollLevel = rollLevel(up, UP_RATE);
             //抽卡次数达到时50的倍数，概率提升
             if (rollNum % stepUpNum == 0) {
@@ -285,13 +285,13 @@ public class YysRollServiceImpl implements ExpandRollService {
                 if (rollNum <= normalMaxProbNum) {
                     rollProb = rollProb.add(upProb).min(maxProb);
                     String probString = rollProb.movePointRight(2).toString();
-                    tipMap.put(rollNum, rollNum+"->定向提升：" + probString+ "%");
+                    tipMap.put(rollNum, "---"+rollNum+"抽，定向UP↑:" + probString+ "%---");
                 }
                 //非全图抽到700抽时，进一步提升概率
                 if (!fullBuff && rollNum == maxRollNum) {
                     rollProb = noFullLastMaxProb;
                     String probString = rollProb.movePointRight(2).toString();
-                    tipMap.put(rollNum,rollNum+"定向提升："+probString+"%");
+                    tipMap.put(rollNum,"---"+rollNum+"抽，定向UP↑:"+probString+ "%---");
                 }
             }
             //抽出高阶式神时

@@ -1,9 +1,6 @@
 package com.github.cuteluobo.pojo;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 抽卡结果
@@ -20,19 +17,19 @@ public abstract class RollResultData {
      * 抽取提示(在多少抽后面插入)
      * <抽取次数，提示语>
      */
-    private Map<Integer, String> tipMap = new HashMap<>();
+    private LinkedHashMap<Integer, String> tipMap = new LinkedHashMap<>();
     private Integer rollNum = 0;
 
     /**
      * 打印抽取结果
-     * @param showAllLevel 是否显示所有抽卡结果
-     * @param hideLowLevelDetail 是否隐藏低阶细节（仅统计数量）
+     * @param showAllLevel 是否显示所有抽卡结果(低阶仅统计数量)
+     * @param showAllTip 是否显示所有提示
      * @return
      */
-    public abstract String printResultText(boolean showAllLevel,boolean hideLowLevelDetail);
+    public abstract String printResultText(boolean showAllLevel,boolean showAllTip);
 
     public String printResultText(){
-        return printResultText(false,true);
+        return printResultText(false,false);
     }
 
     public List<RollResultUnit> getRollUnitList() {
@@ -51,11 +48,11 @@ public abstract class RollResultData {
         this.rollNum = rollNum;
     }
 
-    public Map<Integer, String> getTipMap() {
+    public LinkedHashMap<Integer, String> getTipMap() {
         return tipMap;
     }
 
-    public void setTipMap(Map<Integer, String> tipMap) {
+    public void setTipMap(LinkedHashMap<Integer, String> tipMap) {
         this.tipMap = tipMap;
     }
 }

@@ -18,7 +18,7 @@ public class Main {
         long startTime = System.currentTimeMillis();
         for (int i = 0; i < 1; i++) {
             System.out.println(rollUnit.getLevel()+"-"+rollUnit.getName()+" 追梦结果：");
-            System.out.println(expandRollService.rollTextForSpecifyUnit(rollUnit,false).printResultText(false,true));
+            System.out.println(expandRollService.rollTextForSpecifyUnit(rollUnit,false).printResultText(false,false));
             System.out.println(System.currentTimeMillis()-startTime+"ms");
         }
 //        System.out.println(expandRollService.rollText(10, true, null, null, null).printResultText(true,true));
