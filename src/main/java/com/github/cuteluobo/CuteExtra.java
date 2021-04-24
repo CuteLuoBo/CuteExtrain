@@ -85,39 +85,43 @@ public final class CuteExtra extends JavaPlugin {
     }
 
     private void initDatasource() throws SQLException, IOException {
-            logger.info("开始加载数据库配置");
-            File pluginDataFolder = this.getDataFolder();
-            File databaseFile = new File(pluginDataFolder.getPath()+"/"+DATABASE_FILE_NAME);
-            //不存在数据库文件时进行复制
-            if (!databaseFile.exists()) {
-                logger.info("检测到数据库不存在，读取内置数据库进行复制");
-                try {
-                    InputStream resourceStream = getResourceAsStream(DATABASE_FILE_NAME);
-                    Path target = Paths.get(databaseFile.getPath());
-                    Files.copy(resourceStream, target);
-                    logger.info("复制数据库完成");
-                } catch (IOException e) {
-                    logger.error("复制数据库失败");
-                    throw e;
-                }
+        logger.info("开始加载数据库配置");
+        File pluginDataFolder = this.getDataFolder();
+        File databaseFile = new File(pluginDataFolder.getPath() + "/" + DATABASE_FILE_NAME);
+        //不存在数据库文件时进行复制
+        if (!databaseFile.exists()) {
+            logger.info("检测到数据库不存在，读取内置数据库进行复制");
+            try {
+                InputStream resourceStream = getResourceAsStream(DATABASE_FILE_NAME);
+                Path target = Paths.get(databaseFile.getPath());
+                Files.copy(resourceStream, target);
+                logger.info("复制数据库完成");
+            } catch (IOException e) {
+                logger.error("复制数据库失败");
+                throw e;
             }
+        }
         //TODO 增加从配置文件读取并使用mysql数据库配置方式
-            Properties properties= new Properties();
-            properties.put("mybatis.mapper.scan", "com.github.cuteluobo.mapper");
-            properties.put("mybatis.datasource.type", "POOLED");
-            properties.put("mybatis.datasource.driver", "org.sqlite.JDBC");
-            properties.put("mybatis.datasource.url", "jdbc:sqlite:"+databaseFile.getPath());
-            properties.put("mybatis.datasource.username", "");
-            properties.put("mybatis.datasource.password", "");
-            properties.setProperty("mapUnderscoreToCamelCase", "true");
-            properties.put("mybatis.logImpl","STDOUT_LOGGING");
-            MybatisConfiguration.initConfiguration(properties);
-            Configuration configuration = MybatisConfiguration.getSqlSessionFactory().getConfiguration();
-            configuration.setMapUnderscoreToCamelCase(true);
-            //以插件执行时通过包名导入无效，尝试手动指定class
-            configuration.addMapper(CommandLimitMapper.class);
-            configuration.addMapper(SystemMapper.class);
-            configuration.addMapper(YysUnitMapper.class);
+        Properties properties = new Properties();
+        properties.put("mybatis.mapper.scan", "com.github.cuteluobo.mapper");
+        properties.put("mybatis.datasource.type", "POOLED");
+        properties.put("mybatis.datasource.driver", "org.sqlite.JDBC");
+        properties.put("mybatis.datasource.url", "jdbc:sqlite:" + databaseFile.getPath());
+        properties.put("mybatis.datasource.username", "");
+        properties.put("mybatis.datasource.password", "");
+        properties.setProperty("mapUnderscoreToCamelCase", "true");
+        properties.put("mybatis.logImpl", "STDOUT_LOGGING");
+        MybatisConfiguration.initConfiguration(properties);
+        Configuration configuration = MybatisConfiguration.getSqlSessionFactory().getConfiguration();
+        configuration.setMapUnderscoreToCamelCase(true);
+        //以插件执行时通过包名导入无效，尝试手动指定class
+        Object[] classes = {CommandLimitMapper.class,SystemMapper.class,YysUnitMapper.class};
+        for (Object c : classes) {
+            if (!configuration.getMapperRegistry().hasMapper(c.getClass())) {
+                configuration.addMapper(c.getClass());
+            }
+        }
+
 //            MybatisConfiguration.getSqlSessionFactory().getConfiguration().addMappers("com.github.cuteluobo.mapper");
 //            SystemMapper systemMapper = ProxyHandlerFactory.getMapper(SystemMapper.class);
 //            Boolean noUseSchema = true;

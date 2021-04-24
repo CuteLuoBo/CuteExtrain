@@ -310,7 +310,7 @@ public class YysRollServiceImpl implements ExpandRollService {
                     }
                     break;
                 }else {
-                    rollResultUnit = new RollResultUnit(startRollUnit(levelUnitMap));
+                    rollResultUnit = new RollResultUnit(startRollUnit(rollUnit.getLevel().equals(rollLevel)?levelUnitMap:rollUnitMap.get(rollLevel)));
                     rollResultUnit.setUp(up);
                 }
                 //为SSR时抽取皮肤

@@ -35,11 +35,11 @@ import static com.github.cuteluobo.CuteExtra.basePermission;
  */
 public class RollCommand extends CompositeCommand {
     private static String[] secondCommand = {"阴阳师抽卡","yr"};
-    private static final String PRIMARY = "yroll";
+    private static final String PRIMARY = "yysRoll";
 
     /**指令初始化*/
     public RollCommand() throws PermissionRegistryConflictException {
-        super(CuteExtra.INSTANCE, PRIMARY, secondCommand, "/yroll n 10", PermissionService.getInstance().register(new PermissionId(CuteExtra.PLUGIN_ID,PRIMARY),"阴阳师抽卡权限",CuteExtra.INSTANCE.getParentPermission()), SimpleCommandArgumentContext.EMPTY);
+        super(CuteExtra.INSTANCE, PRIMARY, secondCommand, "/yysRoll n 10", PermissionService.getInstance().register(new PermissionId(CuteExtra.PLUGIN_ID,PRIMARY),"阴阳师抽卡权限",CuteExtra.INSTANCE.getParentPermission()), SimpleCommandArgumentContext.EMPTY);
     }
 
     /**
@@ -108,7 +108,8 @@ public class RollCommand extends CompositeCommand {
                 chainBuilder.append(new At(user.getId()));
                 chainBuilder.append("\n");
             }
-            chainBuilder.append("定向概率UP："+yysUnit.getName()+"("+(allBuff?"全图鉴":"非全图")+") 模拟抽卡结果：\n");
+//            chainBuilder.append("定向概率UP："+yysUnit.getName()+"("+(allBuff?"全图鉴":"非全图")+") 模拟抽卡结果：\n");
+            chainBuilder.append(yysUnit.getLevel()+" "+yysUnit.getName()+" ("+(allBuff?"全图鉴":"非全图")+") 追梦结果：\n");
             chainBuilder.append(YysRollServiceImpl.INSTANCE.rollTextForSpecifyUnit(new RollUnit(yysUnit), allBuff).printResultText());
             sender.sendMessage(chainBuilder.build());
             return true;
