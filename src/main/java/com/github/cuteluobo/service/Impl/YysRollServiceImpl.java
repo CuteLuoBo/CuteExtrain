@@ -202,7 +202,7 @@ public class YysRollServiceImpl implements ExpandRollService {
         RollResultData rollResultData = new YysRollResultData();
         List<RollResultUnit> rollResultUnitList = new ArrayList<>();
         LinkedHashMap<Integer, String> tipMap = new LinkedHashMap<>();
-        //当前指定抽取概率
+        //初始化指定抽取概率
         BigDecimal rollProb = new BigDecimal(0);
         //最大概率
         BigDecimal maxProb = new BigDecimal(0);
@@ -217,45 +217,55 @@ public class YysRollServiceImpl implements ExpandRollService {
         //非全图保底（必出）抽卡数
         int maxRollNum = 700;
         String upUnitLevel = rollUnit.getLevel();
-        /*SSR概率初始化：
-         * 全图鉴：初始15%持续提升并在500次召唤后提升至100%
-         * 非全图鉴：初始的4%持续提升并在500次召唤后提升至20%
-         */
-        if (YysRoll.SSR.getLevel().equals(upUnitLevel)) {
-            if (fullBuff) {
-                rollProb = new BigDecimal("0.15");
-                maxProb = new BigDecimal("1.0");
-                stepUpProb.put(0, new BigDecimal("0.05"));
-                stepUpProb.put(300, new BigDecimal("0.1"));
-                stepUpProb.put(400,new BigDecimal("0.2"));
-            }else{
-                rollProb = new BigDecimal("0.04");
-                maxProb = new BigDecimal("0.2");
-                stepUpProb.put(0, new BigDecimal("0.01"));
-                stepUpProb.put(400, new BigDecimal("0.03"));
-                stepUpProb.put(450, new BigDecimal("0.05"));
+        Map<Integer,RollUnit> levelUnitMap =  new HashMap<>(10);
+        levelUnitMap.putAll(rollUnitMap.get(upUnitLevel));
+        if (YysRoll.SSR.getLevel().equals(upUnitLevel) || YysRoll.SP.getLevel().equals(upUnitLevel)) {
+            //指定SSR/SP时在对应阶级卡池中移除指定概率UP式神，后续进行额外抽取
+            levelUnitMap.remove(rollUnit.getId());
+            /*SSR概率初始化：
+             * 全图鉴：初始15%持续提升并在500次召唤后提升至100%
+             * 非全图鉴：初始的4%持续提升并在500次召唤后提升至20%
+             */
+            if (YysRoll.SSR.getLevel().equals(upUnitLevel)) {
+                if (fullBuff) {
+                    rollProb = new BigDecimal("0.15");
+                    maxProb = new BigDecimal("1.0");
+                    stepUpProb.put(0, new BigDecimal("0.05"));
+                    stepUpProb.put(300, new BigDecimal("0.1"));
+                    stepUpProb.put(400,new BigDecimal("0.2"));
+                }else{
+                    rollProb = new BigDecimal("0.04");
+                    maxProb = new BigDecimal("0.2");
+                    stepUpProb.put(0, new BigDecimal("0.01"));
+                    stepUpProb.put(400, new BigDecimal("0.03"));
+                    stepUpProb.put(450, new BigDecimal("0.05"));
+                }
+                noFullLastMaxProb = new BigDecimal("0.3");
             }
-            noFullLastMaxProb = new BigDecimal("0.3");
+            /*SP概率初始化：
+             * 全图鉴：初始10%持续提升并在500次召唤后提升至100%
+             * 非全图鉴：初始的3%持续提升并在500次召唤后提升至15%
+             */
+            else if (YysRoll.SP.getLevel().equals(upUnitLevel)) {
+                if (fullBuff) {
+                    rollProb = new BigDecimal("0.10");
+                    maxProb = new BigDecimal("1.0");
+                    stepUpProb.put(0, new BigDecimal("0.05"));
+                    stepUpProb.put(300, new BigDecimal("0.1"));
+                    stepUpProb.put(400, new BigDecimal("0.2"));
+                }else{
+                    rollProb = new BigDecimal("0.03");
+                    maxProb = new BigDecimal("0.15");
+                    stepUpProb.put(0, new BigDecimal("0.01"));
+                    stepUpProb.put(150, new BigDecimal("0.02"));
+                    stepUpProb.put(300, new BigDecimal("0.01"));
+                }
+                noFullLastMaxProb = new BigDecimal("0.25");
+            }
         }
-        /*SP概率初始化：
-         * 全图鉴：初始10%持续提升并在500次召唤后提升至100%
-         * 非全图鉴：初始的3%持续提升并在500次召唤后提升至15%
-         */
-        else if (YysRoll.SP.getLevel().equals(upUnitLevel)) {
-            if (fullBuff) {
-                rollProb = new BigDecimal("0.10");
-                maxProb = new BigDecimal("1.0");
-                stepUpProb.put(0, new BigDecimal("0.05"));
-                stepUpProb.put(300, new BigDecimal("0.1"));
-                stepUpProb.put(400, new BigDecimal("0.2"));
-            }else{
-                rollProb = new BigDecimal("0.03");
-                maxProb = new BigDecimal("0.15");
-                stepUpProb.put(0, new BigDecimal("0.01"));
-                stepUpProb.put(150, new BigDecimal("0.02"));
-                stepUpProb.put(300, new BigDecimal("0.01"));
-            }
-            noFullLastMaxProb = new BigDecimal("0.25");
+        //在定向模拟时被捣蛋时，设置第一发SSR/SP转为N
+        else if (YysRoll.N.getLevel().equals(upUnitLevel)){
+            rollProb = new BigDecimal(1);
         }
         BigDecimal upProb ;
         if (stepUpProb.get(0) != null) {
@@ -268,10 +278,7 @@ public class YysRollServiceImpl implements ExpandRollService {
         //概率up
         boolean up = true;
         int upNum = 3;
-        //在对应阶级卡池中移除指定概率UP式神，后续进行额外抽取
-        Map<Integer,RollUnit> levelUnitMap =  new HashMap<>(10);
-        levelUnitMap.putAll(rollUnitMap.get(upUnitLevel));
-        levelUnitMap.remove(rollUnit.getId());
+
         //抽卡开始
         while (true) {
             RollResultUnit rollResultUnit;
@@ -323,6 +330,12 @@ public class YysRollServiceImpl implements ExpandRollService {
             if (rollResultUnit != null) {
                 rollResultUnit.setSequence(rollNum);
                 rollResultUnitList.add(rollResultUnit);
+                //判断是否已抽出指定结果(SR/R)
+                if (rollResultUnit.getId().equals(rollUnit.getId())) {
+                    //全输出结果太长，这里通过tip进行额外显示
+                    tipMap.put(rollNum,rollResultUnit.toString());
+                    break;
+                }
             }
             rollNum++;
             //保底时

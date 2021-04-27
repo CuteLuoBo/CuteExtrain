@@ -40,7 +40,7 @@ public final class CuteExtra extends JavaPlugin {
     public static final CuteExtra INSTANCE = new CuteExtra();
     public static final String PLUGIN_NAME = "cute-extra 模拟抽卡插件";
     public static final String PLUGIN_ID = "com.github.cuteluobo.cute-extra";
-    public static final String PLUGIN_VERSION = "0.3.1-Beta";
+    public static final String PLUGIN_VERSION = "0.3.3";
     public static final String DATABASE_FILE_NAME = "database.sqlite";
     public static Permission basePermission ;
 
@@ -115,10 +115,10 @@ public final class CuteExtra extends JavaPlugin {
         Configuration configuration = MybatisConfiguration.getSqlSessionFactory().getConfiguration();
         configuration.setMapUnderscoreToCamelCase(true);
         //以插件执行时通过包名导入无效，尝试手动指定class
-        Object[] classes = {CommandLimitMapper.class,SystemMapper.class,YysUnitMapper.class};
-        for (Object c : classes) {
-            if (!configuration.getMapperRegistry().hasMapper(c.getClass())) {
-                configuration.addMapper(c.getClass());
+        Class[] classes = {CommandLimitMapper.class,SystemMapper.class,YysUnitMapper.class};
+        for (Class c : classes) {
+            if (!configuration.getMapperRegistry().hasMapper(c)) {
+                configuration.addMapper(c);
             }
         }
 

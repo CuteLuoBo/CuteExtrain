@@ -64,11 +64,11 @@ public class YysRollResultData extends RollResultData {
                         rLevelNum++;
                     }else if (YysRoll.SR.getLevel().equals(level)) {
                         srLevelNum++;
-                    }else if (YysRoll.SSR.getLevel().equals(level) || YysRoll.SP.getLevel().equals(level)) {
+                    }else {
                         sb.append(rollResultUnit).append("\n");
                     }
                     //输出提示语
-                    String tipText = tempTipMap.get(i);
+                    String tipText = tempTipMap.get(i+1);
                     if (tipText != null) {
                         sb.append(tipText).append("\n");
                     }
