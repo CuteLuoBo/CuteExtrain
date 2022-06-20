@@ -1,0 +1,21 @@
+pluginManagement {
+    resolutionStrategy {
+        eachPlugin {
+            switch (requested.id.id) {
+                case "com.github.johnrengelman.shadow": useModule("com.github.jengelman.gradle.plugins:shadow:${requested.version}"); break
+                case "org.jetbrains.kotlin.jvm": useModule("org.jetbrains.kotlin:kotlin-gradle-plugin:${requested.version}")
+            }
+        }
+    }
+
+    repositories {
+        mavenCentral()
+        maven { url "https://repo.maven.apache.org/maven2/net/mamoe/" }
+//        maven { url "https://maven.aliyun.com/nexus/content/groups/public" }
+//        maven { url "https://maven.aliyun.com/nexus/content/repositories/gradle-plugin" }
+        maven { url 'https://mirrors.huaweicloud.com/repository/maven' }
+    }
+}
+
+rootProject.name = 'cute-extra'
+

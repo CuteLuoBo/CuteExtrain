@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.github.cuteluobo.mapper.YysUnitMapper">
+  <resultMap id="BaseResultMap" type="com.github.cuteluobo.model.YysUnit">
+    <!--@mbg.generated-->
+    <!--@Table unit_yys-->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="unit_id" jdbcType="INTEGER" property="unitId" />
+    <result column="level" jdbcType="LONGVARCHAR" property="level" />
+    <result column="name" jdbcType="LONGVARCHAR" property="name" />
+    <result column="special_name" jdbcType="LONGVARCHAR" property="specialName" />
+    <result column="can_roll" jdbcType="INTEGER" property="canRoll" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    id, unit_id, "level", "name", special_name, can_roll
+  </sql>
+  <select id="selectList" resultMap="BaseResultMap">
+    SELECT <include refid="Base_Column_List" /> FROM unit_yys WHERE can_roll = #{canRoll}
+    </select>
+</mapper>

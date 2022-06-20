@@ -1,0 +1,6 @@
+name: "CuteExtra"
+author: "CuteLuoBo"
+version: "0.3.4"
+main: "com.github.cuteluobo.CuteExtra"
+info: "模拟抽卡插件(主要为阴阳师)"
+depends: []
