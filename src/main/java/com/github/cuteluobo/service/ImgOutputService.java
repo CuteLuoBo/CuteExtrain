@@ -3,6 +3,8 @@ package com.github.cuteluobo.service;
 import com.github.cuteluobo.pojo.RollImgResult;
 import com.github.cuteluobo.pojo.RollResultData;
 
+import java.io.IOException;
+
 /**
  * 图片输出服务类
  *
@@ -17,5 +19,5 @@ public interface ImgOutputService {
      * @param title          图片标题
      * @return 处理的图片数据
      */
-    RollImgResult createImgResult(RollResultData rollResultData,String title);
+    RollImgResult createImgResult(RollResultData rollResultData,String title) throws IOException;
 }

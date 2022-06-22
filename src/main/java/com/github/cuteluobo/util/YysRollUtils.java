@@ -1,12 +1,14 @@
 package com.github.cuteluobo.util;
 
 import com.github.cuteluobo.enums.YysRoll;
+import com.github.cuteluobo.pojo.RollResultData;
 import com.github.cuteluobo.pojo.RollResultUnit;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author CuteLuoBo
@@ -66,6 +68,47 @@ public class YysRollUtils {
                                         .divide(total, 4, RoundingMode.CEILING)
                         ))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    public static RollResultData generateTestData(int spNum, int ssrNum, int srNum, int rNum, int nNum) {
+        RollResultData rollResultData = new RollResultData();
+        int totalNum = spNum + ssrNum + srNum + rNum + nNum;
+        //填充测试数组
+        ArrayList<RollResultUnit> rollResultUnits = new ArrayList<>(totalNum);
+        rollResultUnits.addAll(Stream.generate(() ->  {
+            RollResultUnit temp = new RollResultUnit(200, YysRoll.SP.getLevel(), "test");
+            temp.setOfficialId(200L);
+            return temp;}).limit(spNum).collect(Collectors.toList()));
+        rollResultUnits.addAll(Stream.generate(() -> {
+            RollResultUnit temp = new RollResultUnit(200, YysRoll.SSR.getLevel(), "test");
+            temp.setOfficialId(200L);
+            return temp;}).limit(ssrNum).collect(Collectors.toList()));
+        rollResultUnits.addAll(Stream.generate(() -> {
+            RollResultUnit temp = new RollResultUnit(200, YysRoll.SR.getLevel(), "test");
+            temp.setOfficialId(200L);
+            return temp;}).limit(srNum).collect(Collectors.toList()));
+        rollResultUnits.addAll(Stream.generate(() -> {
+            RollResultUnit temp = new RollResultUnit(200, YysRoll.R.getLevel(), "test");
+            temp.setOfficialId(200L);
+            return temp;}).limit(rNum).collect(Collectors.toList()));
+        rollResultUnits.addAll(Stream.generate(() -> {
+            RollResultUnit temp = new RollResultUnit(200, YysRoll.N.getLevel(), "test");
+            temp.setOfficialId(200L);
+            return temp;}).limit(nNum).collect(Collectors.toList()));
+        rollResultData.setRollResultUnitList(rollResultUnits);
+
+        ArrayList<RollResultUnit> winResultUnits = new ArrayList<>(spNum + ssrNum);
+        winResultUnits.addAll(Stream.generate(() -> {
+            RollResultUnit temp = new RollResultUnit(200, YysRoll.SP.getLevel(), "test");
+            temp.setOfficialId(200L);
+            return temp;}).limit(spNum).collect(Collectors.toList()));
+        winResultUnits.addAll(Stream.generate(() -> {
+            RollResultUnit temp = new RollResultUnit(200, YysRoll.SSR.getLevel(), "test");
+            temp.setOfficialId(200L);
+            return temp;}).limit(ssrNum).collect(Collectors.toList()));
+        rollResultData.setRollNum(totalNum);
+        rollResultData.setWinResultUnitList(winResultUnits);
+        return rollResultData;
     }
 
 }

@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.util.*;
 
 /**
+ * 阴阳师抽卡实现类
  * @author CuteLuoBo
  * @date 2021-04-07
  */

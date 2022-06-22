@@ -10,6 +10,11 @@ public class RollUnit {
 
     private Integer id;
 
+    /**
+     * 官方ID
+     */
+    private Long officialId;
+
     private String level;
 
     private String name;
@@ -28,6 +33,7 @@ public class RollUnit {
     }
     public RollUnit(RollUnit rollUnit){
         id = rollUnit.getId();
+        officialId = rollUnit.getOfficialId();
         level = rollUnit.getLevel();
         name = rollUnit.getName();
         specialName = rollUnit.getSpecialName();
@@ -37,6 +43,7 @@ public class RollUnit {
     public RollUnit(YysUnit yysUnit) {
         if (yysUnit != null) {
             id = yysUnit.getUnitId();
+            officialId = (long) yysUnit.getUnitId();
             level = yysUnit.getLevel();
             name = yysUnit.getName();
             specialName = yysUnit.getSpecialName();
@@ -47,6 +54,7 @@ public class RollUnit {
     public String toString() {
         final StringBuffer sb = new StringBuffer("RollUnit{");
         sb.append("id=").append(id);
+        sb.append(", officialId=").append(officialId);
         sb.append(", level='").append(level).append('\'');
         sb.append(", name='").append(name).append('\'');
         sb.append(", specialName='").append(specialName).append('\'');
@@ -93,5 +101,13 @@ public class RollUnit {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Long getOfficialId() {
+        return officialId;
+    }
+
+    public void setOfficialId(Long officialId) {
+        this.officialId = officialId;
     }
 }

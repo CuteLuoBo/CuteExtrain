@@ -7,7 +7,7 @@ import java.util.*;
  * @author CuteLuoBo
  * @date 2021-04-07
  */
-public abstract class RollResultData {
+public class RollResultData {
     /**
      * 抽卡结果数组
      */
@@ -27,11 +27,14 @@ public abstract class RollResultData {
 
     /**
      * 打印抽取结果
+     *
      * @param showAllLevel 是否显示所有抽卡结果(低阶仅统计数量)
-     * @param showAllTip 是否显示所有提示
+     * @param showAllTip   是否显示所有提示
      * @return
      */
-    public abstract String printResultText(boolean showAllLevel,boolean showAllTip);
+    public String printResultText(boolean showAllLevel, boolean showAllTip) {
+        return "";
+    }
 
     public String printResultText(){
         return printResultText(false,false);
