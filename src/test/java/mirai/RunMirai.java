@@ -1,6 +1,11 @@
 package mirai;
 
 import com.github.cuteluobo.CuteExtra;
+import com.github.cuteluobo.service.Impl.YysImgOutputServiceImpl;
+import kotlinx.coroutines.BuildersKt;
+import kotlinx.coroutines.GlobalScope;
+import net.mamoe.mirai.console.command.Command;
+import net.mamoe.mirai.console.command.CommandManager;
 import net.mamoe.mirai.console.plugin.PluginManager;
 import net.mamoe.mirai.console.terminal.MiraiConsoleImplementationTerminal;
 import net.mamoe.mirai.console.terminal.MiraiConsoleTerminalLoader;
@@ -15,6 +20,6 @@ public class RunMirai {
         PluginManager.INSTANCE.loadPlugin(CuteExtra.INSTANCE);
         PluginManager.INSTANCE.enablePlugin(CuteExtra.INSTANCE);
 //        // 阻止主线程退出
-//        BuildersKt.runBlocking(GlobalScope.INSTANCE.getCoroutineContext(), (coroutineScope, continuation) -> CommandManager.INSTANCE.registerCommand(continuation,false));
+        BuildersKt.runBlocking(GlobalScope.INSTANCE.getCoroutineContext(), (coroutineScope, continuation) -> CommandManager.INSTANCE.registerCommand((Command) continuation,false));
     }
 }

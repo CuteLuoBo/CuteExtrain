@@ -1,11 +1,13 @@
 package com.github.cuteluobo.service.Impl;
 
+import com.github.cuteluobo.enums.RollGameType;
 import com.github.cuteluobo.enums.RollModel;
 import com.github.cuteluobo.enums.YysRoll;
 import com.github.cuteluobo.pojo.RollImgResult;
 import com.github.cuteluobo.pojo.RollResultData;
 import com.github.cuteluobo.pojo.RollResultUnit;
 import com.github.cuteluobo.pojo.TextDrawData;
+import com.github.cuteluobo.repository.ResourceLoader;
 import com.github.cuteluobo.service.ImgOutputService;
 import com.github.cuteluobo.util.DrawUtils;
 import com.github.cuteluobo.util.FastDrawContainerHelper;
@@ -35,15 +37,13 @@ public class YysImgOutputServiceImpl implements ImgOutputService {
 
     public static final YysImgOutputServiceImpl INSTANCE = new YysImgOutputServiceImpl();
 
+    /**
+     * 默认资源加载文件夹
+     */
+    private File normalResourceFolder;
+
     private YysImgOutputServiceImpl() {
-//        if (!NORMAL_SAVE_FOLDER.exists()) {
-//            try {
-//                NORMAL_SAVE_FOLDER.mkdirs();
-//            } catch (Exception e) {
-//                logger.error("图片输出文件夹初始化失败",e);
-//                throw e;
-//            }
-//        }
+        normalResourceFolder = new File(ResourceLoader.INSTANCE.getNormalResourceFolder().getAbsolutePath() + File.separator + RollGameType.yys.getText());
     }
 
 
@@ -66,9 +66,12 @@ public class YysImgOutputServiceImpl implements ImgOutputService {
 
         //填充背景
         try {
-            //从文件中获取
-            //TODO 后续转为统一引入
-            graphics2D.drawImage(DrawUtils.loadImageFile(new File("J:\\image\\背景-1080x1700.jpg")),0,0,null);
+            //从文件中获取背景
+            graphics2D.drawImage(
+                    DrawUtils.loadImageFile(
+                            new File(normalResourceFolder.getAbsolutePath() + File.separator + "background.jpg")
+                    ),
+                    0, 0, null);
         } catch (IOException ioException) {
             logger.error("读取并绘制图片背景失败，使用默认填充",ioException);
             //填充背景颜色
@@ -76,12 +79,12 @@ public class YysImgOutputServiceImpl implements ImgOutputService {
             graphics2D.fillRect(0,0, imageWidth,imageHeight);
         }
         //默认字体
-        Font normalFont = new Font("悟空大字库",Font.BOLD,12);
+        Font normalFont;
         try {
-            //TODO 转为统一引入并设置缺少字体的运行情况
-            normalFont = Font.createFont(Font.PLAIN, new File("J:\\image\\悟空大字库.ttf"));
-        } catch (FontFormatException | IOException ioException) {
-
+            normalFont = Font.createFont(Font.PLAIN, new File(normalResourceFolder.getAbsolutePath() + File.separator + "font.ttf"));
+        } catch (Exception e) {
+            logger.error("无法加载字体，可能造成显示效果异常!",e);
+            normalFont = Font.decode(null);
         }
 
 
@@ -346,7 +349,7 @@ public class YysImgOutputServiceImpl implements ImgOutputService {
         int rightShowUnitStartX = achievementContainerX + 600;
         int rightShowUnitStartY = achievementContainerY - 50;
         //获取文件并绘制
-        File rightShowUnitBodyFile = new File("J:\\image\\body" + File.separator + rightShowUnit.getOfficialId() + ".png");
+        File rightShowUnitBodyFile = new File(normalResourceFolder.getAbsolutePath() + File.separator + "body" + File.separator + rightShowUnit.getOfficialId() + ".png");
         if (rightShowUnitBodyFile.exists()) {
             BufferedImage rightShowUnitImageBuffer = ImageIO.read(rightShowUnitBodyFile);
             graphics2D.drawImage(rightShowUnitImageBuffer, rightShowUnitStartX, rightShowUnitStartY, 400, 330, null);
@@ -354,8 +357,6 @@ public class YysImgOutputServiceImpl implements ImgOutputService {
             logger.error("ID为{}的式神身体大图不存在", rightShowUnit.getOfficialId());
         }
         //TODO 增加右侧式神的阶级和名称标识
-
-        //TODO 增加欧气鉴定模块
 
         //====欧气鉴定-statistic====
         //圆角弧度
@@ -494,10 +495,15 @@ public class YysImgOutputServiceImpl implements ImgOutputService {
         drawHelper.drawAll();
         //2.绘制阶级图标
         String level = rollResultUnit.getLevel();
-        //TODO 后续转为统一获取文件
-        BufferedImage levelImage = ImageIO.read(new File("J:\\image"+File.separator + level.toLowerCase() + ".png"));
-        int levelImageSpace = 2;
-        graphics2D.drawImage(levelImage, startX + levelImageSpace, startY + levelImageSpace, 45, 30, null);
+        File levelImageFile = new File(normalResourceFolder.getAbsolutePath() + File.separator + level.toLowerCase() + ".png");
+        try {
+            BufferedImage levelImage = ImageIO.read(levelImageFile);
+            int levelImageSpace = 2;
+            graphics2D.drawImage(levelImage, startX + levelImageSpace, startY + levelImageSpace, 45, 30, null);
+        } catch (IOException ioException) {
+            logger.error("无法加载阶级图片,路径：{}",levelImageFile.getAbsolutePath(),ioException);
+        }
+
 
         //3.绘制式神图标
         long yysUnitId = rollResultUnit.getOfficialId();
@@ -511,13 +517,12 @@ public class YysImgOutputServiceImpl implements ImgOutputService {
         //头像起始点X
         int unitStartX = startX + unitImagerVerticalSpace;
         int unitStartY = startY + unitImagerLateralSpace;
-        //TODO 后续转为统一获取文件
-        File unitImageFile = new File("J:\\image\\head" + File.separator + yysUnitId + ".png");
+        File unitImageFile = new File(normalResourceFolder.getAbsolutePath() + File.separator + "head" + File.separator + yysUnitId + ".png");
         if (unitImageFile.exists()) {
-            BufferedImage unitImage = ImageIO.read(new File("J:\\image\\head"+File.separator + yysUnitId + ".png"));
+            BufferedImage unitImage = ImageIO.read(unitImageFile);
             graphics2D.drawImage(unitImage, unitStartX, unitStartY, unitImageWidth, unitImagerHeight, null);
         }else {
-            logger.error("无法找到ID为{}头像",yysUnitId);
+            logger.error("无法找到ID为{}的头像",yysUnitId);
         }
 
         //4.描边

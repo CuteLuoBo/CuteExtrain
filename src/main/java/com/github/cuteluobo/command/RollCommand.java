@@ -2,11 +2,17 @@ package com.github.cuteluobo.command;
 
 import cn.pomit.mybatis.ProxyHandlerFactory;
 import com.github.cuteluobo.CuteExtra;
+import com.github.cuteluobo.enums.RollModel;
 import com.github.cuteluobo.mapper.YysUnitMapper;
 import com.github.cuteluobo.model.YysUnit;
+import com.github.cuteluobo.pojo.RollImgResult;
+import com.github.cuteluobo.pojo.RollResultData;
 import com.github.cuteluobo.pojo.RollUnit;
+import com.github.cuteluobo.service.Impl.YysImgOutputServiceImpl;
 import com.github.cuteluobo.service.Impl.YysRollServiceImpl;
+import com.github.cuteluobo.util.FileIoUtils;
 import kotlin.reflect.KClass;
+import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.console.command.*;
 import net.mamoe.mirai.console.command.descriptor.CommandArgumentContext;
 import net.mamoe.mirai.console.command.descriptor.CommandValueArgumentParser;
@@ -20,9 +26,20 @@ import net.mamoe.mirai.contact.User;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.MessageReceipt;
 import net.mamoe.mirai.message.data.*;
+import net.mamoe.mirai.utils.ExternalResource;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.Buffer;
+import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Objects;
 
@@ -36,6 +53,7 @@ import static com.github.cuteluobo.CuteExtra.basePermission;
 public class RollCommand extends CompositeCommand {
     private static String[] secondCommand = {"阴阳师抽卡","yr"};
     private static final String PRIMARY = "yysRoll";
+    Logger logger = LoggerFactory.getLogger(RollCommand.class);
 
     /**指令初始化*/
     public RollCommand() throws PermissionRegistryConflictException {
@@ -49,18 +67,21 @@ public class RollCommand extends CompositeCommand {
      * @param message UP/no UP
      */
     @SubCommand({"normal","n","普通"})
-    public Boolean normal(@NotNull CommandSender sender,Integer rollNum, String message){
+    public Boolean normal(@NotNull CommandSender sender,Integer rollNum, String message) throws IOException {
         boolean up = message != null && message.toLowerCase().contains("up");
         //设置最大单次500抽
         rollNum = Math.min(rollNum, 500);
         MessageChainBuilder chainBuilder = new MessageChainBuilder();
         User user = sender.getUser();
+        long userId = 0;
         if (user != null) {
+            userId = user.getId();
             chainBuilder.append(new At(user.getId()));
             chainBuilder.append("\n");
         }
-        chainBuilder.append(rollNum+"抽"+(up?"UP":"")+ "模拟抽卡结果：\n");
-        chainBuilder.append(YysRollServiceImpl.INSTANCE.rollUp(rollNum, up, null, null).printResultText());
+        String title = rollNum + "抽" + (up ? "UP" : "") + "模拟抽卡结果：\n";
+        RollResultData rollResultData = YysRollServiceImpl.INSTANCE.rollUp(rollNum, up, null, null);
+        chainBuilder = imageMessageNormalPut(chainBuilder, sender, rollResultData, RollModel.normal, title, String.valueOf(userId));
         sender.sendMessage(chainBuilder.build());
         return true;
     }
@@ -71,7 +92,7 @@ public class RollCommand extends CompositeCommand {
      * @param rollNum 抽卡次数
      */
     @SubCommand({"normal","n","普通"})
-    public Boolean normal(@NotNull CommandSender sender,Integer rollNum){
+    public Boolean normal(@NotNull CommandSender sender,Integer rollNum) throws IOException {
         return normal(sender, rollNum, null);
     }
 
@@ -109,8 +130,9 @@ public class RollCommand extends CompositeCommand {
                 chainBuilder.append("\n");
             }
 //            chainBuilder.append("定向概率UP："+yysUnit.getName()+"("+(allBuff?"全图鉴":"非全图")+") 模拟抽卡结果：\n");
-            chainBuilder.append(yysUnit.getLevel()+" "+yysUnit.getName()+" ("+(allBuff?"全图鉴":"非全图")+") 追梦结果：\n");
-            chainBuilder.append(YysRollServiceImpl.INSTANCE.rollTextForSpecifyUnit(new RollUnit(yysUnit), allBuff).printResultText());
+            String title = yysUnit.getLevel()+" "+yysUnit.getName()+" ("+(allBuff?"全图鉴":"非全图")+") 追梦结果：\n";
+            RollResultData rollResultData = YysRollServiceImpl.INSTANCE.rollTextForSpecifyUnit(new RollUnit(yysUnit), allBuff);
+            chainBuilder = imageMessageNormalPut(chainBuilder, sender, rollResultData, RollModel.specify, title, "x");
             sender.sendMessage(chainBuilder.build());
             return true;
         } catch (Exception e) {
@@ -161,8 +183,9 @@ public class RollCommand extends CompositeCommand {
                 chainBuilder.append(new At(user.getId()));
                 chainBuilder.append("\n");
             }
-            chainBuilder.append(yysUnit.getLevel()+" "+yysUnit.getName()+" ("+(upBuff?"UP":"无UP")+") 追梦结果：\n");
-            chainBuilder.append(YysRollServiceImpl.INSTANCE.rollTextForAssignUnit(new RollUnit(yysUnit), upBuff).printResultText());
+            String title = yysUnit.getLevel()+" "+yysUnit.getName()+" ("+(upBuff?"UP":"无UP")+") 追梦结果：\n";
+            RollResultData rollResultData = YysRollServiceImpl.INSTANCE.rollTextForAssignUnit(new RollUnit(yysUnit), upBuff);
+            chainBuilder = imageMessageNormalPut(chainBuilder, sender, rollResultData, RollModel.assign, title, "x");
             sender.sendMessage(chainBuilder.build());
             return true;
         } catch (Exception e) {
@@ -191,5 +214,47 @@ public class RollCommand extends CompositeCommand {
         }
         chainBuilder.append(message);
         return chainBuilder.build();
+    }
+
+    /**
+     * 默认的信息链添加
+     * @param chainBuilder
+     * @param sender
+     * @param rollResultData
+     * @param rollModel
+     * @param title
+     * @param fileRollName
+     * @return
+     */
+    private MessageChainBuilder imageMessageNormalPut(MessageChainBuilder chainBuilder,CommandSender sender,RollResultData rollResultData,RollModel rollModel,String title,String fileRollName) {
+        try {
+            Image image = conventToRollImage(rollResultData, rollModel, title, fileRollName, sender.getSubject());
+            chainBuilder.append(image);
+        } catch (Exception exception) {
+            logger.error("图片生成/上传错误", exception);
+            chainBuilder.append("图片生成/上传错误，请联系管理员，错误信息："+exception.getMessage()+"\n");
+            chainBuilder.append(title);
+            chainBuilder.append(rollResultData.printResultText());
+        }
+        return chainBuilder;
+    }
+
+    /**
+     * 将抽卡信息传为图片
+     * @param rollResultData 抽卡信息
+     * @param rollModel      抽卡模式
+     * @param title 标题
+     * @param fileRollName   文件随机名
+     * @param contact      聊天主体（上传用）
+     * @return 上传后的Image对象
+     * @throws IOException 图片生成或写入/读取错误
+     */
+    private Image conventToRollImage(RollResultData rollResultData,RollModel rollModel,String title,String fileRollName, Contact contact) throws IOException {
+        RollImgResult rollImgResult = YysImgOutputServiceImpl.INSTANCE.createImgResult(rollResultData,title, rollModel);
+        BufferedImage bufferedImage = rollImgResult.getBufferedImage();
+        File imageFile = FileIoUtils.createFileTemp("yysRoll", fileRollName + "-" + rollResultData.getRollNum() + ".jpg");
+        ImageIO.write(bufferedImage, "jpg", imageFile);
+        ExternalResource resource = ExternalResource.create(imageFile);
+        return Contact.uploadImage(contact, resource);
     }
 }
