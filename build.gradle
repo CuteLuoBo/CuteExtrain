@@ -11,7 +11,7 @@ plugins {
 }
 
 group = 'com.github.cuteluobo'
-version = '0.4.0'
+version = '0.4.0-dev'
 def miraiCoreVersion = '2.9.2'
 def miraiConsoleVersion = '2.9.2'
 
@@ -41,7 +41,7 @@ dependencies {
     // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
 //    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.14.1'
     // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-slf4j-impl
-    testImplementation group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.17.2'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.17.2'
 
     implementation 'com.amihaiemil.web:eo-yaml:6.0.1'
 //    implementation group: 'com.amihaiemil.web', name: 'eo-yaml', version: '6.0.1'

@@ -204,7 +204,7 @@ public class YysImgOutputServiceImpl implements ImgOutputService {
         //循环输出式神结果
         List<RollResultUnit> winResultUnitList = rollResultData.getWinResultUnitList();
         //无事发生
-        if (winResultUnitList.isEmpty()) {
+        if (winResultUnitList == null || winResultUnitList.isEmpty()) {
             //新建列表替换
             TextDrawData textDrawData = new TextDrawData("（无事发生）", normalFont, 100, Color.BLACK
                     , null, null);
@@ -212,62 +212,64 @@ public class YysImgOutputServiceImpl implements ImgOutputService {
             textDrawDataList.add(textDrawData);
             winShowContainerHelper.setTextDrawList(textDrawDataList);
             winShowContainerHelper.drawAllText();
-        }
-        for (int i = 0; i < Math.min(maxShowNum, winResultUnitList.size()); i++) {
-            //每行的开头重置X和Y
-            if (i != 0 && i % lineShowUnitNum == 0) {
-                unitStartX = unitNormalStartX;
-                unitStartY += rollUnitContainHeight + unitContainInsideTopSpace;
-            }
-            //绘制主体
-            drawRollUnitContainerAndData(graphics2D
-                    , unitStartX, unitStartY
-                    , rollUnitContainWidth, rollUnitContainHeight
-                    , normalFont
-                    , winResultUnitList.get(i));
-            //X偏移容器宽度+间隔
-            unitStartX += rollUnitContainWidth + unitContainSpace;
-        }
-        //超限提示语
-        if (winResultUnitList.size() > maxShowNum) {
-            //累加结果
-            int ssrNum = 0;
-            int spNum = 0;
-            for (int i = maxShowNum; i < winResultUnitList.size(); i++) {
-                RollResultUnit rollResultUnit = winResultUnitList.get(i);
-                if (YysRoll.SSR.getLevel().equals(rollResultUnit.getLevel())) {
-                    ssrNum++;
-                } else if (YysRoll.SP.getLevel().equals(rollResultUnit.getLevel())) {
-                    spNum++;
+        } else {
+            for (int i = 0; i < Math.min(maxShowNum, winResultUnitList.size()); i++) {
+                //每行的开头重置X和Y
+                if (i != 0 && i % lineShowUnitNum == 0) {
+                    unitStartX = unitNormalStartX;
+                    unitStartY += rollUnitContainHeight + unitContainInsideTopSpace;
                 }
+                //绘制主体
+                drawRollUnitContainerAndData(graphics2D
+                        , unitStartX, unitStartY
+                        , rollUnitContainWidth, rollUnitContainHeight
+                        , normalFont
+                        , winResultUnitList.get(i));
+                //X偏移容器宽度+间隔
+                unitStartX += rollUnitContainWidth + unitContainSpace;
             }
-            //构建字符串
-            StringBuilder limitUpStringBuilder = new StringBuilder();
-            limitUpStringBuilder.append("剩余 ");
-            if (ssrNum > 0) {
-                limitUpStringBuilder.append(ssrNum).append(" 个SSR ");
+            //超限提示语
+            if (winResultUnitList.size() > maxShowNum) {
+                //累加结果
+                int ssrNum = 0;
+                int spNum = 0;
+                for (int i = maxShowNum; i < winResultUnitList.size(); i++) {
+                    RollResultUnit rollResultUnit = winResultUnitList.get(i);
+                    if (YysRoll.SSR.getLevel().equals(rollResultUnit.getLevel())) {
+                        ssrNum++;
+                    } else if (YysRoll.SP.getLevel().equals(rollResultUnit.getLevel())) {
+                        spNum++;
+                    }
+                }
+                //构建字符串
+                StringBuilder limitUpStringBuilder = new StringBuilder();
+                limitUpStringBuilder.append("剩余 ");
+                if (ssrNum > 0) {
+                    limitUpStringBuilder.append(ssrNum).append(" 个SSR ");
+                }
+                if (spNum > 0) {
+                    limitUpStringBuilder.append(spNum).append(" 个SP ");
+                }
+                String limitUpString = limitUpStringBuilder.toString();
+                //样式
+                int limitUpFontSize = 30;
+                int limitUpTopSize = 10;
+                Color limitUpColor = Color.BLACK;
+                //修改原容器绘制类，只绘制指定文本
+                FastDrawContainerHelper limitUpStringHelper = winShowContainerHelper;
+                //关闭边框绘制
+                limitUpStringHelper.setContainerBorder(false);
+                //新建列表替换
+                TextDrawData textDrawData = new TextDrawData(limitUpString, normalFont, limitUpFontSize, limitUpColor
+                        , null, unitStartY - winShowContainerY + rollUnitContainHeight + limitUpTopSize);
+                List<TextDrawData> textDrawDataList = new ArrayList<>(1);
+                textDrawDataList.add(textDrawData);
+                limitUpStringHelper.setTextDrawList(textDrawDataList);
+                //绘制文本
+                limitUpStringHelper.drawAllText();
             }
-            if (spNum > 0) {
-                limitUpStringBuilder.append(spNum).append(" 个SP ");
-            }
-            String limitUpString = limitUpStringBuilder.toString();
-            //样式
-            int limitUpFontSize = 30;
-            int limitUpTopSize = 10;
-            Color limitUpColor = Color.BLACK;
-            //修改原容器绘制类，只绘制指定文本
-            FastDrawContainerHelper limitUpStringHelper = winShowContainerHelper;
-            //关闭边框绘制
-            limitUpStringHelper.setContainerBorder(false);
-            //新建列表替换
-            TextDrawData textDrawData = new TextDrawData(limitUpString, normalFont, limitUpFontSize, limitUpColor
-                    , null, unitStartY - winShowContainerY + rollUnitContainHeight + limitUpTopSize );
-            List<TextDrawData> textDrawDataList = new ArrayList<>(1);
-            textDrawDataList.add(textDrawData);
-            limitUpStringHelper.setTextDrawList(textDrawDataList);
-            //绘制文本
-            limitUpStringHelper.drawAllText();
         }
+
 
         //====成就统计====
         //容器
@@ -358,6 +360,8 @@ public class YysImgOutputServiceImpl implements ImgOutputService {
         }
         //TODO 增加右侧式神的阶级和名称标识
 
+        //TODO 增加定向抽取时的额外界面
+
         //====欧气鉴定-statistic====
         //圆角弧度
         int statisticContainerRoundRate = 10;
@@ -415,7 +419,7 @@ public class YysImgOutputServiceImpl implements ImgOutputService {
         Map<YysRoll, BigDecimal> yysRollBigDecimalMap = YysRollUtils.checkLevelRate(rollResultData.getRollResultUnitList());
         //抽卡概率
         StringBuilder rollRateStringBuilder = new StringBuilder();
-        rollRateStringBuilder.append("出货次数： ").append(rollResultData.getWinResultUnitList().size());
+        rollRateStringBuilder.append("出货次数： ").append(rollResultData.getWinResultUnitList()==null?0:rollResultData.getWinResultUnitList().size());
         if (!rollResultData.getWinResultUnitList().isEmpty()) {
             rollRateStringBuilder.append("， 其中 ");
             long ssrNum = rollResultData.getWinResultUnitList()

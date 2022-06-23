@@ -161,6 +161,9 @@ public class YysRollServiceImpl implements ExpandRollService {
     public RollResultData rollTextForSpecifyUnit(@NotNull RollUnit rollUnit,@NotNull Boolean fullBuff) {
         //初始返回数据对象
         RollResultData rollResultData = new YysRollResultData();
+        //出货结果集
+        List<RollResultUnit> winResultUnitList = new ArrayList<>(20);
+        rollResultData.setWinResultUnitList(winResultUnitList);
         List<RollResultUnit> rollResultUnitList = new ArrayList<>();
         LinkedHashMap<Integer, String> tipMap = new LinkedHashMap<>();
         //初始化指定抽取概率
@@ -272,6 +275,8 @@ public class YysRollServiceImpl implements ExpandRollService {
                     rollResultUnit.setSequence(rollNum);
                     rollResultUnit.setUp(up);
                     rollResultUnitList.add(rollResultUnit);
+                    //高阶添加到出货结果集
+                    winResultUnitList.add(rollResultUnit);
                     //为SSR时抽取皮肤
                     if (YysRoll.SSR.getLevel().equals(rollResultUnit.getLevel()) && rollUnit.getSpecialName() != null) {
                         rollResultUnit.setSpecial(rollSsrSkin());
@@ -281,6 +286,8 @@ public class YysRollServiceImpl implements ExpandRollService {
                     rollResultUnit = new RollResultUnit(startRollUnit(rollUnit.getLevel().equals(rollLevel)?levelUnitMap:rollUnitMap.get(rollLevel)));
                     rollResultUnit.setUp(up);
                 }
+                //高阶添加到出货结果集
+                winResultUnitList.add(rollResultUnit);
                 //为SSR时抽取皮肤
                 if (YysRoll.SSR.getLevel().equals(rollResultUnit.getLevel()) && rollUnit.getSpecialName() != null) {
                     rollResultUnit.setSpecial(rollSsrSkin());
@@ -288,9 +295,11 @@ public class YysRollServiceImpl implements ExpandRollService {
             }else {
                 rollResultUnit = new RollResultUnit (startRollUnit(rollUnitMap.get(rollLevel)));
             }
+            //储存结果
             if (rollResultUnit != null) {
                 rollResultUnit.setSequence(rollNum);
                 rollResultUnitList.add(rollResultUnit);
+
                 //判断是否已抽出指定结果(SR/R)
                 if (rollResultUnit.getId().equals(rollUnit.getId())) {
                     //全输出结果太长，这里通过tip进行额外显示
@@ -305,6 +314,8 @@ public class YysRollServiceImpl implements ExpandRollService {
                 rollResultUnit.setSequence(rollNum);
                 rollResultUnit.setUp(up);
                 rollResultUnitList.add(rollResultUnit);
+                //添加到出货结果集
+                winResultUnitList.add(rollResultUnit);
                 break;
             }
         }
@@ -331,6 +342,9 @@ public class YysRollServiceImpl implements ExpandRollService {
         //初始返回数据对象
         List<RollResultUnit> rollResultUnitList = new ArrayList<>();
         RollResultData rollResultData = new YysRollResultData();
+        //出货结果集
+        List<RollResultUnit> winResultUnitList = new ArrayList<>(20);
+        rollResultData.setWinResultUnitList(winResultUnitList);
         //统计抽取次数
         int rollNum = 1;
         //未定义up倍数时手动添加
@@ -351,6 +365,8 @@ public class YysRollServiceImpl implements ExpandRollService {
                 if (YysRoll.SSR.getLevel().equals(rollResultUnit.getLevel()) || YysRoll.SP.getLevel().equals(rollResultUnit.getLevel())) {
                     rollResultUnit.setUp(up);
                     up = --upNum > 0;
+                    //添加到出货结果集
+                    winResultUnitList.add(rollResultUnit);
                 }
                 //设置抽取次数次数
                 rollResultUnit.setSequence(rollNum);

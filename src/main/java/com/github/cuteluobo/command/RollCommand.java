@@ -27,6 +27,8 @@ import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.MessageReceipt;
 import net.mamoe.mirai.message.data.*;
 import net.mamoe.mirai.utils.ExternalResource;
+import net.mamoe.mirai.utils.LoggerAdapters;
+import net.mamoe.mirai.utils.MiraiLogger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -79,6 +81,7 @@ public class RollCommand extends CompositeCommand {
             chainBuilder.append(new At(user.getId()));
             chainBuilder.append("\n");
         }
+        //TODO 增加时间统计
         String title = rollNum + "抽" + (up ? "UP" : "") + "模拟抽卡结果：\n";
         RollResultData rollResultData = YysRollServiceImpl.INSTANCE.rollUp(rollNum, up, null, null);
         chainBuilder = imageMessageNormalPut(chainBuilder, sender, rollResultData, RollModel.normal, title, String.valueOf(userId));
@@ -254,7 +257,6 @@ public class RollCommand extends CompositeCommand {
         BufferedImage bufferedImage = rollImgResult.getBufferedImage();
         File imageFile = FileIoUtils.createFileTemp("yysRoll", fileRollName + "-" + rollResultData.getRollNum() + ".jpg");
         ImageIO.write(bufferedImage, "jpg", imageFile);
-        ExternalResource resource = ExternalResource.create(imageFile);
-        return Contact.uploadImage(contact, resource);
+        return Contact.uploadImage(contact, imageFile);
     }
 }
