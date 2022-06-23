@@ -1,5 +1,6 @@
 package com.github.cuteluobo.service.Impl;
 
+import com.github.cuteluobo.enums.RollModel;
 import com.github.cuteluobo.enums.YysRoll;
 import com.github.cuteluobo.pojo.RollImgResult;
 import com.github.cuteluobo.pojo.RollResultData;
@@ -9,9 +10,11 @@ import com.github.cuteluobo.service.ImgOutputService;
 import com.github.cuteluobo.util.DrawUtils;
 import com.github.cuteluobo.util.FastDrawContainerHelper;
 import com.github.cuteluobo.util.FastDrawContainerHelperBuilder;
+import com.github.cuteluobo.util.YysRollUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigDecimal;
 import java.util.*;
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -29,18 +32,6 @@ import java.util.stream.Stream;
  */
 public class YysImgOutputServiceImpl implements ImgOutputService {
     Logger logger = LoggerFactory.getLogger(YysImgOutputServiceImpl.class);
-
-    //TODO 输出路径交给具体的输出类进行处理
-    /**
-     * ，
-     * 储存路径名称
-     */
-//    public static final String NORMAL_SAVE_FOLDER_NAME = "imgOutPut"+File.separator+"yys";
-
-    /**
-     * 完整储存路径
-     */
-//    public static final File NORMAL_SAVE_FOLDER = new File(CuteExtra.INSTANCE.getDataFolderPath().getFileName() + File.separator + NORMAL_SAVE_FOLDER_NAME);
 
     public static final YysImgOutputServiceImpl INSTANCE = new YysImgOutputServiceImpl();
 
@@ -64,7 +55,7 @@ public class YysImgOutputServiceImpl implements ImgOutputService {
      * @return 处理的图片数据
      */
     @Override
-    public RollImgResult createImgResult(RollResultData rollResultData, String title) throws IOException {
+    public RollImgResult createImgResult(RollResultData rollResultData, String title, RollModel rollModel) throws IOException {
         int imageWidth = 1080;
         int imageHeight = 1700;
         int spaceHeight = imageHeight / 48;
@@ -84,7 +75,14 @@ public class YysImgOutputServiceImpl implements ImgOutputService {
             graphics2D.setColor(new Color(247,186,129));
             graphics2D.fillRect(0,0, imageWidth,imageHeight);
         }
+        //默认字体
+        Font normalFont = new Font("悟空大字库",Font.BOLD,12);
+        try {
+            //TODO 转为统一引入并设置缺少字体的运行情况
+            normalFont = Font.createFont(Font.PLAIN, new File("J:\\image\\悟空大字库.ttf"));
+        } catch (FontFormatException | IOException ioException) {
 
+        }
 
 
         //====设置中间的半透明容器遮罩====
@@ -101,23 +99,19 @@ public class YysImgOutputServiceImpl implements ImgOutputService {
         int mainContainerY = mainContainerVerticalOutSideSpace;
 
         Color mainContainerBackgroundColor = new Color(236, 240, 241, 128);
+
+        String copyrightString = "Created By Cute_LuoBo - YysBot";
         //构建并绘制
         FastDrawContainerHelper mainContainerHelper
                 = new FastDrawContainerHelperBuilder(graphics2D)
                 .setContainer(mainContainerWidth, mainContainerHeight, mainContainerX, mainContainerY)
                 .setContainerBackground(mainContainerBackgroundColor)
                 .setContainerRoundRate(mainContainerRoundRate)
+                .addContainerTitle(copyrightString, normalFont, 15, Color.BLACK, null, mainContainerHeight - 20)
                 .build();
         mainContainerHelper.drawAll();
 
-        //默认字体
-        Font normalFont = new Font("悟空大字库",Font.BOLD,12);
-        try {
-            //TODO 转为统一引入并设置缺少字体的运行情况
-            normalFont = Font.createFont(Font.PLAIN, new File("J:\\image\\悟空大字库.ttf"));
-        } catch (FontFormatException | IOException ioException) {
 
-        }
 
 
         //====主标题====
@@ -206,6 +200,16 @@ public class YysImgOutputServiceImpl implements ImgOutputService {
         int unitStartY = winShowContainerY + winTitleFontSize + winShowContainerInsideSpace  + unitContainTopSpace;
         //循环输出式神结果
         List<RollResultUnit> winResultUnitList = rollResultData.getWinResultUnitList();
+        //无事发生
+        if (winResultUnitList.isEmpty()) {
+            //新建列表替换
+            TextDrawData textDrawData = new TextDrawData("（无事发生）", normalFont, 100, Color.BLACK
+                    , null, null);
+            List<TextDrawData> textDrawDataList = new ArrayList<>(1);
+            textDrawDataList.add(textDrawData);
+            winShowContainerHelper.setTextDrawList(textDrawDataList);
+            winShowContainerHelper.drawAllText();
+        }
         for (int i = 0; i < Math.min(maxShowNum, winResultUnitList.size()); i++) {
             //每行的开头重置X和Y
             if (i != 0 && i % lineShowUnitNum == 0) {
@@ -263,9 +267,9 @@ public class YysImgOutputServiceImpl implements ImgOutputService {
         }
 
         //====成就统计====
-        //1.绘制主标题容器遮罩
+        //容器
         //圆角弧度
-        int achievementContainerRoundRate = 10;
+        int achievementContainerRoundRate = 30;
         //横纵间隙
         int achievementContainerLateralOutSideSpace = 30;
         int achievementContainerVerticalOutSideSpace = 40;
@@ -277,7 +281,7 @@ public class YysImgOutputServiceImpl implements ImgOutputService {
         int achievementContainerY = winShowContainerY + winShowContainerHeight + achievementContainerVerticalOutSideSpace;
 
         //背景颜色和字体颜色
-        Color achievementContainerBackgroundColor = new Color(189, 195, 199, 153);
+        Color achievementContainerBackgroundColor = new Color(140, 181, 209, 128);
         Color achievementContainerTitleColor = Color.BLACK;
         //字体大小
         int achievementTitleFontSize = 30;
@@ -353,6 +357,116 @@ public class YysImgOutputServiceImpl implements ImgOutputService {
 
         //TODO 增加欧气鉴定模块
 
+        //====欧气鉴定-statistic====
+        //圆角弧度
+        int statisticContainerRoundRate = 10;
+        //横纵间隙
+        int statisticContainerLateralOutSideSpace = 30;
+        int statisticContainerVerticalOutSideSpace = 40;
+        //容器宽高
+        int statisticContainerWidth = mainContainerWidth - 2 * statisticContainerLateralOutSideSpace;
+        int statisticContainerHeight = 320;
+        //容器原点
+        int statisticContainerX = mainContainerX + statisticContainerLateralOutSideSpace;
+        int statisticContainerY = achievementContainerY + achievementContainerHeight + statisticContainerVerticalOutSideSpace;
+        //背景颜色和字体颜色
+        Color statisticContainerBackgroundColor = new Color(189, 195, 199, 153);
+        Color statisticContainerTitleColor = Color.BLACK;
+        //字体大小
+        int statisticTitleFontSize = 30;
+        int statisticTitleFontTopSpace = 15;
+        String statisticTitle = "欧气鉴定";
+        //构建并绘制
+        FastDrawContainerHelper statisticContainerHelper
+                = new FastDrawContainerHelperBuilder(graphics2D)
+                .setContainer(statisticContainerWidth, statisticContainerHeight, statisticContainerX, statisticContainerY)
+                .setContainerBackground(statisticContainerBackgroundColor)
+                .setContainerRoundRate(statisticContainerRoundRate)
+                .setContainerBorder(Color.BLACK,1)
+                .addContainerTitle(statisticTitle, normalFont, statisticTitleFontSize, statisticContainerTitleColor, null, statisticTitleFontTopSpace)
+                .build();
+        statisticContainerHelper.drawAll();
+
+        //其他文字输出
+        List<TextDrawData> statisticTextDrawDataList = new ArrayList<>(3);
+
+        int statisticNormalFontSize = 25;
+        //与容器的左间隔
+        int statisticNormalLeftSpace = 35;
+        //与标题的间隔
+        int statisticFontTopTitleSpace = 30;
+        //多行文字内部间隙
+        int statisticFontInsideTopSpace = (int) (statisticNormalFontSize * 0.8);
+        //间隔缓存用
+        int statisticTempSpace = statisticTitleFontSize + statisticTitleFontTopSpace;
+        //抽取模式
+        String rollModelString = "抽取模式： " + rollModel.getText();
+        TextDrawData rollModelDrawData = new TextDrawData(rollModelString, normalFont, statisticNormalFontSize, Color.BLACK, statisticNormalLeftSpace, statisticTempSpace);
+        statisticTextDrawDataList.add(rollModelDrawData);
+        //累加文字间隔
+        statisticTempSpace += statisticNormalFontSize + statisticFontInsideTopSpace;
+        //抽卡次数
+        String rollNumString = "抽取次数： " + rollResultData.getRollNum();
+        TextDrawData rollNumDrawData = new TextDrawData(rollNumString, normalFont, statisticNormalFontSize, Color.BLACK, statisticNormalLeftSpace, statisticTempSpace);
+        statisticTextDrawDataList.add(rollNumDrawData);
+        //累加文字间隔
+        statisticTempSpace += statisticNormalFontSize + statisticFontInsideTopSpace;
+        Map<YysRoll, BigDecimal> yysRollBigDecimalMap = YysRollUtils.checkLevelRate(rollResultData.getRollResultUnitList());
+        //抽卡概率
+        StringBuilder rollRateStringBuilder = new StringBuilder();
+        rollRateStringBuilder.append("出货次数： ").append(rollResultData.getWinResultUnitList().size());
+        if (!rollResultData.getWinResultUnitList().isEmpty()) {
+            rollRateStringBuilder.append("， 其中 ");
+            long ssrNum = rollResultData.getWinResultUnitList()
+                    .stream()
+                    .filter(unit -> YysRoll.SSR.getLevel().equals(unit.getLevel()))
+                    .count();
+            long spNum = rollResultData.getWinResultUnitList()
+                    .stream()
+                    .filter(unit -> YysRoll.SP.getLevel().equals(unit.getLevel()))
+                    .count();
+            if (ssrNum > 0) {
+                rollRateStringBuilder.append("SSR阶 x ").append(ssrNum).append(" ");
+            }
+            if (spNum > 0) {
+                rollRateStringBuilder.append("Sp阶 x ").append(spNum).append(" ");
+            }
+        }
+        //出货概率
+        BigDecimal winRate = yysRollBigDecimalMap.getOrDefault(YysRoll.SP, BigDecimal.ZERO).add(yysRollBigDecimalMap.getOrDefault(YysRoll.SSR, BigDecimal.ZERO));
+        rollRateStringBuilder.append(" ，综合出货概率为： ").append(winRate.movePointRight(2)).append(" %");
+        TextDrawData rollRateDrawData = new TextDrawData(rollRateStringBuilder.toString(), normalFont, statisticNormalFontSize, Color.BLACK, statisticNormalLeftSpace, statisticTempSpace);
+        statisticTextDrawDataList.add(rollRateDrawData);
+
+
+        //评分
+        //累加文字间隔
+        statisticTempSpace += statisticNormalFontSize + statisticFontInsideTopSpace;
+        //字体大小
+        int statisticCommentFontSize = 80;
+        int statisticCommentFontTopSpace = 15;
+        Color statisticCommentColor = Color.BLACK;
+        StringBuilder statisticCommentStringBuilder = new StringBuilder();
+        statisticCommentStringBuilder.append("鉴定为： ");
+        //默认概率
+        float normalWinRate = YysRoll.SP.getRollProb() + YysRoll.SSR.getRollProb();
+        float nowWinRate = winRate.floatValue();
+        //
+        if (nowWinRate >= normalWinRate * 1.5) {
+            statisticCommentStringBuilder.append("欧");
+            statisticCommentColor = Color.RED;
+        } else if (nowWinRate <= normalWinRate * 0.8) {
+            statisticCommentStringBuilder.append("非");
+            statisticCommentColor = new Color(8, 14, 44);
+        } else {
+            statisticCommentStringBuilder.append("平");
+            statisticCommentColor = new Color(231, 109, 137);
+        }
+        TextDrawData statisticCommentDrawData = new TextDrawData(statisticCommentStringBuilder.toString(), normalFont, statisticCommentFontSize,statisticCommentColor,null, statisticTempSpace + statisticCommentFontTopSpace);
+        statisticTextDrawDataList.add(statisticCommentDrawData);
+
+        statisticContainerHelper.setTextDrawList(statisticTextDrawDataList);
+        statisticContainerHelper.drawAllText();
         //结束写入
         graphics2D.dispose();
         //转换结果对象

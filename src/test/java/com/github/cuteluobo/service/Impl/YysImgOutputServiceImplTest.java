@@ -1,6 +1,7 @@
 package com.github.cuteluobo.service.Impl;
 
 import cn.pomit.mybatis.configuration.MybatisConfiguration;
+import com.github.cuteluobo.enums.RollModel;
 import com.github.cuteluobo.pojo.RollImgResult;
 import com.github.cuteluobo.pojo.RollResultData;
 import com.github.cuteluobo.pojo.RollResultUnit;
@@ -60,8 +61,8 @@ class YysImgOutputServiceImplTest {
 
     @Test
     void createImgResult() throws IOException {
-        rollResultData = YysRollServiceImpl.INSTANCE.rollUp(1000,true,10,null);
-        RollImgResult rollImgResult = yysImgOutputService.createImgResult(rollResultData, title);
+        rollResultData = YysRollServiceImpl.INSTANCE.rollUp(100,true,3,0.05f);
+        RollImgResult rollImgResult = yysImgOutputService.createImgResult(rollResultData, title, RollModel.normal);
         BufferedImage bufferedImage = rollImgResult.getBufferedImage();
         File writeFile = new File(testFile.getAbsolutePath() +File.separator + System.currentTimeMillis() + ".png");
         ImageIO.write(bufferedImage, "png", writeFile);
