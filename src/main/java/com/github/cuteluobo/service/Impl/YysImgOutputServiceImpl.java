@@ -4,8 +4,11 @@ import com.github.cuteluobo.enums.YysRoll;
 import com.github.cuteluobo.pojo.RollImgResult;
 import com.github.cuteluobo.pojo.RollResultData;
 import com.github.cuteluobo.pojo.RollResultUnit;
+import com.github.cuteluobo.pojo.TextDrawData;
 import com.github.cuteluobo.service.ImgOutputService;
 import com.github.cuteluobo.util.DrawUtils;
+import com.github.cuteluobo.util.FastDrawContainerHelper;
+import com.github.cuteluobo.util.FastDrawContainerHelperBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,11 +16,11 @@ import java.util.*;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
-import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * 阴阳师图片消息生成实现类
@@ -82,6 +85,8 @@ public class YysImgOutputServiceImpl implements ImgOutputService {
             graphics2D.fillRect(0,0, imageWidth,imageHeight);
         }
 
+
+
         //====设置中间的半透明容器遮罩====
         //圆角弧度
         int mainContainerRoundRate = 10;
@@ -94,13 +99,16 @@ public class YysImgOutputServiceImpl implements ImgOutputService {
         //容器原点
         int mainContainerX = mainContainerLateralOutSideSpace;
         int mainContainerY = mainContainerVerticalOutSideSpace;
-        //设置颜色并绘制
-        graphics2D.setColor(new Color(236,240,241, 128));
-        graphics2D.fillRoundRect(mainContainerX, mainContainerY
-                , mainContainerWidth , mainContainerHeight
-                , mainContainerRoundRate, mainContainerRoundRate);
 
-        int leftSideX = imageWidth / 6;
+        Color mainContainerBackgroundColor = new Color(236, 240, 241, 128);
+        //构建并绘制
+        FastDrawContainerHelper mainContainerHelper
+                = new FastDrawContainerHelperBuilder(graphics2D)
+                .setContainer(mainContainerWidth, mainContainerHeight, mainContainerX, mainContainerY)
+                .setContainerBackground(mainContainerBackgroundColor)
+                .setContainerRoundRate(mainContainerRoundRate)
+                .build();
+        mainContainerHelper.drawAll();
 
         //默认字体
         Font normalFont = new Font("悟空大字库",Font.BOLD,12);
@@ -126,29 +134,20 @@ public class YysImgOutputServiceImpl implements ImgOutputService {
         //容器原点
         int mainTitleContainerX = mainContainerX + mainTitleContainerLateralOutSideSpace;
         int mainTitleContainerY = mainContainerY + mainTitleContainerVerticalOutSideSpace;
-        //绘制容器
-        drawRoundRectContainer(graphics2D
-                , new Color(189, 195, 199, 204), null
-                , mainTitleContainerX, mainTitleContainerY
-                , mainTitleContainerWidth, mainTitleContainerHeight
-                , mainTitleContainerRoundRate);
-
-        //2.绘制标题
+        //背景颜色和字体颜色
+        Color mainTitleContainerBackgroundColor = new Color(189, 195, 199, 204);
+        Color mainTitleColor = Color.BLACK;
+        //字体大小
         int mainTitleFontSize = 50;
-        graphics2D.setFont(normalFont.deriveFont((float) mainTitleFontSize));
-        graphics2D.setColor(Color.BLACK);
-
-        //计算起始坐标
-        int mainTitleStartX = mainTitleContainerX + DrawUtils.getCenterStringStartPoint(
-                graphics2D.getFontMetrics(),
-                title,
-                mainTitleContainerWidth);
-
-        //起始Y点= 容器起始Y + 字体居中间隔 + 字体像素大小
-        int mainTitleStartY = mainTitleContainerY + (mainTitleContainerHeight - mainTitleFontSize) /2 + mainTitleFontSize;
-        //绘制标题
-        graphics2D.drawString(title,  mainTitleStartX, mainTitleStartY);
-        float mainTitleEndY = mainTitleStartY + mainTitleFontSize;
+        //构建并绘制
+        FastDrawContainerHelper mainTitleContainerHelper
+                = new FastDrawContainerHelperBuilder(graphics2D)
+                .setContainer(mainTitleContainerWidth, mainTitleContainerHeight, mainTitleContainerX, mainTitleContainerY)
+                .setContainerBackground(mainTitleContainerBackgroundColor)
+                .setContainerRoundRate(mainTitleContainerRoundRate)
+                .addContainerTitle(title, normalFont, mainTitleFontSize, mainTitleColor, null, null)
+                .build();
+        mainTitleContainerHelper.drawAll();
 
         //====出货结果区====
         //1.绘制容器遮罩
@@ -165,24 +164,23 @@ public class YysImgOutputServiceImpl implements ImgOutputService {
         int winShowContainerY = mainTitleContainerY + mainTitleContainerHeight + winShowContainerVerticalOutSideSpace;
         //容器内空
         int winShowContainerInsideSpace = 20;
-        //绘制容器
-        drawRoundRectContainer(graphics2D
-                , new Color(189,195,199, 153), Color.BLACK
-                , winShowContainerX, winShowContainerY
-                , winShowContainerWidth, winShowContainerHeight
-                , winShowContainerRoundRate);
-        //2.标题
-        float winTitleFontSize = 30f;
-        graphics2D.setFont(normalFont.deriveFont(winTitleFontSize));
-        graphics2D.setColor(Color.BLACK);
+        //背景颜色和字体颜色
+        Color winShowContainerBackgroundColor = new Color(189, 195, 199, 153);
+        Color winShowContainerBorderColor = Color.BLACK;
+        Color winShowContainerTitleColor = Color.BLACK;
+        //字体大小
+        int winTitleFontSize = 30;
         String winTitle = "出货结果";
-        float winTitleStartX = winShowContainerX + DrawUtils.getCenterStringStartPoint(
-                graphics2D.getFontMetrics(),
-                winTitle,
-                winShowContainerWidth);
-        float winTitleStartY = winShowContainerY + winShowContainerInsideSpace + winTitleFontSize;
-        //绘制
-        graphics2D.drawString(winTitle, winTitleStartX, winTitleStartY);
+        //构建并绘制
+        FastDrawContainerHelper winShowContainerHelper
+                = new FastDrawContainerHelperBuilder(graphics2D)
+                .setContainer(winShowContainerWidth, winShowContainerHeight, winShowContainerX, winShowContainerY)
+                .setContainerBackground(winShowContainerBackgroundColor)
+                .setContainerBorder(winShowContainerBorderColor,1)
+                .setContainerRoundRate(winShowContainerRoundRate)
+                .addContainerTitle(winTitle, normalFont, winTitleFontSize, winShowContainerTitleColor, null, winShowContainerInsideSpace)
+                .build();
+        winShowContainerHelper.drawAll();
 
         //3.详细式神结果输出
 
@@ -203,9 +201,9 @@ public class YysImgOutputServiceImpl implements ImgOutputService {
         int unitContainTopSpace = 15;
         //内部Y间隔
         int unitContainInsideTopSpace = rollUnitContainHeight / 10;
-        int unitNormalStartX = winShowContainerX + winShowContainerInsideSpace + 15;
+        int unitNormalStartX = winShowContainerX + winShowContainerInsideSpace + winUnitTopSpace;
         int unitStartX = unitNormalStartX;
-        int unitStartY = (int) (winTitleStartY + unitContainTopSpace);
+        int unitStartY = winShowContainerY + winTitleFontSize + winShowContainerInsideSpace  + unitContainTopSpace;
         //循环输出式神结果
         List<RollResultUnit> winResultUnitList = rollResultData.getWinResultUnitList();
         for (int i = 0; i < Math.min(maxShowNum, winResultUnitList.size()); i++) {
@@ -246,21 +244,22 @@ public class YysImgOutputServiceImpl implements ImgOutputService {
                 limitUpStringBuilder.append(spNum).append(" 个SP ");
             }
             String limitUpString = limitUpStringBuilder.toString();
-            //样式和绘制
+            //样式
             int limitUpFontSize = 30;
             int limitUpTopSize = 10;
-            graphics2D.setFont(normalFont.deriveFont((float) limitUpFontSize));
-            graphics2D.setColor(Color.BLACK);
-            //计算起始坐标
-            int limitUpStartX = winShowContainerX + DrawUtils.getCenterStringStartPoint(
-                    graphics2D.getFontMetrics(),
-                    limitUpString,
-                    winShowContainerWidth);
-
-            //起始Y点= 容器起始Y + 字体居中间隔 + 字体像素大小
-            int limitUpStartY = unitStartY + rollUnitContainHeight + limitUpTopSize + limitUpFontSize;
-            //绘制
-            graphics2D.drawString(limitUpString,  limitUpStartX, limitUpStartY);
+            Color limitUpColor = Color.BLACK;
+            //修改原容器绘制类，只绘制指定文本
+            FastDrawContainerHelper limitUpStringHelper = winShowContainerHelper;
+            //关闭边框绘制
+            limitUpStringHelper.setContainerBorder(false);
+            //新建列表替换
+            TextDrawData textDrawData = new TextDrawData(limitUpString, normalFont, limitUpFontSize, limitUpColor
+                    , null, unitStartY - winShowContainerY + rollUnitContainHeight + limitUpTopSize );
+            List<TextDrawData> textDrawDataList = new ArrayList<>(1);
+            textDrawDataList.add(textDrawData);
+            limitUpStringHelper.setTextDrawList(textDrawDataList);
+            //绘制文本
+            limitUpStringHelper.drawAllText();
         }
 
         //====成就统计====
@@ -276,31 +275,29 @@ public class YysImgOutputServiceImpl implements ImgOutputService {
         //容器原点
         int achievementContainerX = mainContainerX + achievementContainerLateralOutSideSpace;
         int achievementContainerY = winShowContainerY + winShowContainerHeight + achievementContainerVerticalOutSideSpace;
-        //绘制容器
-        drawRoundRectContainer(graphics2D
-                , new Color(189, 195, 199, 204), null
-                , achievementContainerX, achievementContainerY
-                , achievementContainerWidth, achievementContainerHeight
-                , achievementContainerRoundRate);
 
-        //2.绘制标题
-        //字体靠左间隔
-        int achievementFontLeftSpace = 30;
-        int achievementFontTopSpace = 20;
-
+        //背景颜色和字体颜色
+        Color achievementContainerBackgroundColor = new Color(189, 195, 199, 153);
+        Color achievementContainerTitleColor = Color.BLACK;
         //字体大小
         int achievementTitleFontSize = 30;
         String achievementTitle = "成就统计：";
-        graphics2D.setFont(normalFont.deriveFont((float) achievementTitleFontSize));
-        graphics2D.setColor(Color.BLACK);
-        //容器原点
-        int achievementTitleX = achievementContainerX + achievementFontLeftSpace;
-        int achievementTitleY = achievementContainerY + achievementFontTopSpace + achievementTitleFontSize;
-        graphics2D.drawString(achievementTitle, achievementTitleX, achievementTitleY);
+        //字体与边框距离
+        int achievementFontLeftSpace = 30;
+        int achievementFontTopSpace = 20;
+        //构建并绘制
+        FastDrawContainerHelper achievementContainerHelper
+                = new FastDrawContainerHelperBuilder(graphics2D)
+                .setContainer(achievementContainerWidth, achievementContainerHeight, achievementContainerX, achievementContainerY)
+                .setContainerBackground(achievementContainerBackgroundColor)
+                .setContainerRoundRate(achievementContainerRoundRate)
+                .addContainerTitle(achievementTitle, normalFont, achievementTitleFontSize, achievementContainerTitleColor, achievementFontLeftSpace, achievementFontTopSpace)
+                .build();
+        achievementContainerHelper.drawAll();
 
         //3.成就数据统计-抽取最多式神
-        Map<Integer, RollResultUnit> unitMap = new HashMap<>();
-        Map<Integer, Integer> totalMap = new HashMap<>();
+        Map<Integer, RollResultUnit> unitMap = new HashMap<>(16);
+        Map<Integer, Integer> totalMap = new HashMap<>(16);
         //数据累加
         rollResultData.getRollResultUnitList().forEach( rollResultUnit -> {
             unitMap.put(rollResultUnit.getId(), rollResultUnit);
@@ -311,8 +308,11 @@ public class YysImgOutputServiceImpl implements ImgOutputService {
         //找出最大值
         for (Map.Entry<Integer, Integer> entry : totalMap.entrySet()
         ) {
-            unitId = entry.getKey();
-            totalNum = entry.getValue();
+            int temp = entry.getValue();
+            if (temp > totalNum) {
+                unitId = entry.getKey();
+                totalNum = temp;
+            }
         }
 
         RollResultUnit maxUnit = unitMap.get(unitId);
@@ -320,18 +320,21 @@ public class YysImgOutputServiceImpl implements ImgOutputService {
         //统计输出
         //与标题的间隔
         int achievementFontTopTitleSpace = 30;
-        //内部间隙
+        //多行文字内部间隙
         int achievementFontInsideTopSpace = 20;
 
         //字体大小
         int achievement1FontSize = 20;
+        Color achievement1Color = Color.BLACK;
         String achievement1Title = "抽取最多式神： " + maxUnit.getLevel() + " " + maxUnit.getName() + " x " + totalNum + " 次";
-        graphics2D.setFont(normalFont.deriveFont((float) achievement1FontSize));
-        graphics2D.setColor(Color.BLACK);
-        //输出原点
-        int achievement1X = achievementTitleX + achievementFontLeftSpace;
-        int achievement1Y = achievementTitleY + achievementFontTopTitleSpace + achievement1FontSize;
-        graphics2D.drawString(achievement1Title, achievement1X, achievement1Y);
+        //构建成就输出
+        TextDrawData achievement1 = new TextDrawData(achievement1Title, normalFont, achievement1FontSize, achievement1Color
+                , achievementFontLeftSpace, achievementFontTopTitleSpace + achievementTitleFontSize);
+        List<TextDrawData> achievementList = new ArrayList<>(1);
+        achievementList.add(achievement1);
+        //替换原容器文本数据并绘制
+        achievementContainerHelper.setTextDrawList(achievementList);
+        achievementContainerHelper.drawAllText();
         //TODO 增加更多成就统计
 
         //成就/追梦右侧式神大图
@@ -359,26 +362,31 @@ public class YysImgOutputServiceImpl implements ImgOutputService {
         rollImgResult.setWinResultUnitList(rollResultData.getWinResultUnitList());
         rollImgResult.setTipMap(rollResultData.getTipMap());
         rollImgResult.setBufferedImage(bufferedImage);
-
-//        graphics2D.setColor(new Color(172,133,117));
         return rollImgResult;
     }
 
     private void drawRollUnitContainerAndData(Graphics2D graphics2D, int startX, int startY, int width, int height, Font font, RollResultUnit rollResultUnit) throws IOException {
         //1.绘制容器
-        drawRoundRectContainer(graphics2D, new Color(236, 240, 241, 150), null, startX, startY, width, height, 20);
-        //绘制阶级图标
+        //背景颜色和字体颜色
+        Color backgroundColor = new Color(236, 240, 241, 150);
+        int roundRate = 20;
+        //构建并绘制
+        FastDrawContainerHelper drawHelper
+                = new FastDrawContainerHelperBuilder(graphics2D)
+                .setContainer(width, height, startX, startY)
+                .setContainerBackground(backgroundColor)
+                .setContainerRoundRate(roundRate)
+                .build();
+        drawHelper.drawAll();
+        //2.绘制阶级图标
         String level = rollResultUnit.getLevel();
         //TODO 后续转为统一获取文件
         BufferedImage levelImage = ImageIO.read(new File("J:\\image"+File.separator + level.toLowerCase() + ".png"));
         int levelImageSpace = 2;
         graphics2D.drawImage(levelImage, startX + levelImageSpace, startY + levelImageSpace, 45, 30, null);
 
-        //2.绘制式神图标
+        //3.绘制式神图标
         long yysUnitId = rollResultUnit.getOfficialId();
-
-
-
         //头像上下间隔
         int unitImagerLateralSpace = 10;
         //头像左右间隔
@@ -398,58 +406,27 @@ public class YysImgOutputServiceImpl implements ImgOutputService {
             logger.error("无法找到ID为{}头像",yysUnitId);
         }
 
-        //描边
+        //4.描边
         graphics2D.setColor(Color.GRAY);
-        graphics2D.draw(new Ellipse2D.Float(unitStartX,unitStartY,unitImageWidth,unitImagerHeight));
+        graphics2D.draw(new Ellipse2D.Float(unitStartX, unitStartY, unitImageWidth, unitImagerHeight));
 
-        //绘制抽卡次数
-        //文字
-        String rollNumString  = "第 " + rollResultUnit.getSequence() + " 抽";
+        //5.绘制文本列表
+        ArrayList<TextDrawData> textDrawDataList = new ArrayList<>(2);
+        //抽卡次数
+        String rollNumString = "第 " + rollResultUnit.getSequence() + " 抽 " + (rollResultUnit.getUp() ? "(UP)" : "");
         //文字参数
         int rollNumFontSize = height / 10;
-        graphics2D.setFont(font.deriveFont((float) rollNumFontSize));
-        graphics2D.setColor(Color.BLACK);
-        //绘制起始点
-        int rollNumStartX = startX + DrawUtils.getCenterStringStartPoint(graphics2D.getFontMetrics(), rollNumString, width);
-        int rollNumStartY = unitStartY + unitImagerHeight + unitImagerLateralSpace + rollNumFontSize;
-        graphics2D.drawString(rollNumString,rollNumStartX,rollNumStartY);
-
-        //绘制式神名称
-        //文字
+        TextDrawData rollNum = new TextDrawData(rollNumString, font, rollNumFontSize, Color.BLACK
+                , null, unitImagerHeight + unitImagerLateralSpace * 2);
+        textDrawDataList.add(rollNum);
+        //式神名称
         String unitNameString = rollResultUnit.getName();
-        //文字参数
         int unitNameFontSize = height / 8;
-        graphics2D.setFont(font.deriveFont((float) unitNameFontSize));
-        graphics2D.setColor(Color.BLACK);
-        //绘制起始点
-        int unitNameStartX = startX + DrawUtils.getCenterStringStartPoint(graphics2D.getFontMetrics(), unitNameString, width);
-        int unitNameStartY = rollNumStartY + unitNameFontSize  + 10;
-        graphics2D.drawString(unitNameString,unitNameStartX,unitNameStartY);
+        TextDrawData unitName = new TextDrawData(unitNameString, font, unitNameFontSize, Color.BLACK
+                , null, unitImagerHeight + unitImagerLateralSpace * 2 + rollNumFontSize + 10);
+        textDrawDataList.add(unitName);
+        drawHelper.setTextDrawList(textDrawDataList);
+        //绘制
+        drawHelper.drawAllText();
     }
-
-    /**
-     * 绘制圆角矩形容器
-     *
-     * @param graphics2D               绘制对象
-     * @param containerBackgroundColor 容器的背景颜色，为null时即不填充背景颜色
-     * @param borderColor              边框的颜色，为null时即不绘制边框
-     * @param startX                   起始X
-     * @param startY                   起始Y
-     * @param width                    容器宽度
-     * @param height                   容器高度
-     * @param roundRate                圆角弧度
-     */
-    private void drawRoundRectContainer(Graphics2D graphics2D, Color containerBackgroundColor, Color borderColor, int startX, int startY, int width, int height, int roundRate) {
-        //容器
-        graphics2D.setColor(containerBackgroundColor);
-        graphics2D.fillRoundRect(startX, startY
-                , width, height
-                , roundRate, roundRate);
-        //绘制容器外框
-        graphics2D.setColor(borderColor);
-        graphics2D.draw(new RoundRectangle2D.Float(startX, startY
-                , width, height
-                , roundRate, roundRate));
-    }
-
 }

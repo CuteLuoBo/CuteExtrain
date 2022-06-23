@@ -60,7 +60,7 @@ class YysImgOutputServiceImplTest {
 
     @Test
     void createImgResult() throws IOException {
-        rollResultData = YysRollServiceImpl.INSTANCE.rollUp(100,true,100,100f);
+        rollResultData = YysRollServiceImpl.INSTANCE.rollUp(1000,true,10,null);
         RollImgResult rollImgResult = yysImgOutputService.createImgResult(rollResultData, title);
         BufferedImage bufferedImage = rollImgResult.getBufferedImage();
         File writeFile = new File(testFile.getAbsolutePath() +File.separator + System.currentTimeMillis() + ".png");
