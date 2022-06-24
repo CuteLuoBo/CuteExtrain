@@ -26,6 +26,7 @@ import net.mamoe.mirai.message.data.MessageChainBuilder;
 import net.mamoe.mirai.utils.LoggerAdapters;
 import net.mamoe.mirai.utils.MiraiLogger;
 import org.apache.ibatis.session.Configuration;
+import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,7 +51,7 @@ public final class CuteExtra extends JavaPlugin {
     public static final CuteExtra INSTANCE = new CuteExtra();
     public static final String PLUGIN_NAME = "cute-extra 模拟抽卡插件";
     public static final String PLUGIN_ID = "com.github.cuteluobo.cute-extra";
-    public static final String PLUGIN_VERSION = "0.4.1-dev";
+    public static final String PLUGIN_VERSION = "0.4.1";
     public static final String DATABASE_FILE_NAME = "database.sqlite";
     public static Permission basePermission ;
 
@@ -180,7 +181,7 @@ public final class CuteExtra extends JavaPlugin {
 //                logger.info("初始化数据表完成");
 //            }
         logger.info("加载数据库完成");
-        LoggerAdapters.useLog4j2();
+//        LoggerAdapters.useLog4j2();
     }
 
 }
