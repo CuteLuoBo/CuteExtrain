@@ -2,11 +2,15 @@ package com.github.cuteluobo;
 
 import cn.pomit.mybatis.ProxyHandlerFactory;
 import cn.pomit.mybatis.configuration.MybatisConfiguration;
+import com.github.cuteluobo.command.InvitedCommand;
 import com.github.cuteluobo.command.RollCommand;
 import com.github.cuteluobo.enums.DatabaseTable;
 import com.github.cuteluobo.mapper.CommandLimitMapper;
 import com.github.cuteluobo.mapper.SystemMapper;
 import com.github.cuteluobo.mapper.YysUnitMapper;
+import com.github.cuteluobo.repository.GlobalConfig;
+import com.github.cuteluobo.repository.InvitedEventRepository;
+import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.console.command.CommandManager;
 import net.mamoe.mirai.console.permission.Permission;
 import net.mamoe.mirai.console.permission.PermissionId;
@@ -14,6 +18,12 @@ import net.mamoe.mirai.console.permission.PermissionRegistryConflictException;
 import net.mamoe.mirai.console.permission.PermissionService;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescriptionBuilder;
+import net.mamoe.mirai.event.GlobalEventChannel;
+import net.mamoe.mirai.event.Listener;
+import net.mamoe.mirai.event.events.*;
+import net.mamoe.mirai.message.data.MessageChain;
+import net.mamoe.mirai.message.data.MessageChainBuilder;
+import net.mamoe.mirai.utils.LoggerAdapters;
 import net.mamoe.mirai.utils.MiraiLogger;
 import org.apache.ibatis.session.Configuration;
 
@@ -40,7 +50,7 @@ public final class CuteExtra extends JavaPlugin {
     public static final CuteExtra INSTANCE = new CuteExtra();
     public static final String PLUGIN_NAME = "cute-extra 模拟抽卡插件";
     public static final String PLUGIN_ID = "com.github.cuteluobo.cute-extra";
-    public static final String PLUGIN_VERSION = "0.3.4";
+    public static final String PLUGIN_VERSION = "0.4.1-dev";
     public static final String DATABASE_FILE_NAME = "database.sqlite";
     public static Permission basePermission ;
 
@@ -72,6 +82,34 @@ public final class CuteExtra extends JavaPlugin {
             logger.error(PLUGIN_NAME+" v"+PLUGIN_VERSION+"加载错误，请查看打印信息");
             e.printStackTrace();
         }
+//        https://github.com/mamoe/mirai/blob/dev/docs/Events.md#%E5%BF%AB%E9%80%9F%E6%8C%87%E5%AF%BC
+//        //群邀请监听
+        Listener botInvitedJoinGroupRequestEventListener = GlobalEventChannel.INSTANCE.subscribeAlways(BotInvitedJoinGroupRequestEvent.class, event -> {
+            MessageChain chain = new MessageChainBuilder()
+                    .append("群加入邀请事件消息 ID: ").append(event.getEventId() + "\n")
+                    .append("邀请人：").append(event.getInvitorNick()).append("(" + event.getInvitorId() + ")\n")
+                    .append("对应群：").append(event.getGroupName()).append("(" + event.getGroupId() + ")\n")
+                    .append("输入/invited 或/i group/g <群号> <y/n> 来处理事件\n")
+                    .append("例:/i g 1234567 n -拒绝1234567群邀请\n")
+                    .build();
+            event.getBot().getFriend(GlobalConfig.ADMIN_ID).sendMessage(chain);
+            //缓存事件
+            InvitedEventRepository.INSTANCE.getGroupInvitedJoinEventMap().put(event.getGroupId(),event);
+        });
+        //好友申请监听
+        Listener botInvitedFriendsRequestEventListener = GlobalEventChannel.INSTANCE.subscribeAlways(NewFriendRequestEvent.class, event -> {
+            MessageChain chain = new MessageChainBuilder()
+                    .append("好友添加事件消息 ID: ").append(event.getEventId() + "\n")
+                    .append("添加人：").append(event.getFromNick()).append("(" + event.getFromId() + ")\n")
+                    .append("来自群：").append(event.getFromGroup().getName()).append("(" + event.getFromGroupId() + ")\n")
+                    .append("好友申请消息：").append(event.getMessage())
+                    .append("默认同意\n")
+                    .build();
+            event.getBot().getFriend(GlobalConfig.ADMIN_ID).sendMessage(chain);
+            event.accept();
+            //非默认通过时，缓存事件进行处理
+//            InvitedEventRepository.INSTANCE.getFriendRequestEventMap().put(event.getFromId(),event);
+        });
     }
 
     /**初始化权限*/
@@ -80,8 +118,8 @@ public final class CuteExtra extends JavaPlugin {
     }
 
     private void commandReg() throws PermissionRegistryConflictException {
-        RollCommand rollCommand = new RollCommand();
-        CommandManager.INSTANCE.registerCommand(rollCommand, false);
+        CommandManager.INSTANCE.registerCommand(new RollCommand(), false);
+        CommandManager.INSTANCE.registerCommand(new InvitedCommand(), false);
     }
 
     private void initDatasource() throws SQLException, IOException {
@@ -142,6 +180,7 @@ public final class CuteExtra extends JavaPlugin {
 //                logger.info("初始化数据表完成");
 //            }
         logger.info("加载数据库完成");
+        LoggerAdapters.useLog4j2();
     }
 
 }

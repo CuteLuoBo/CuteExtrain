@@ -40,11 +40,11 @@ class YysRollUtilsTest {
         System.out.println("====== YysRollUtilsTest ======");
         //填充测试数组
         testUnitList = new ArrayList<>(totalNum);
-        testUnitList.addAll(Stream.generate(() -> new RollResultUnit(0,YysRoll.SP.getLevel(),"test")).limit(spNum).collect(Collectors.toList()));
-        testUnitList.addAll(Stream.generate(() -> new RollResultUnit(0,YysRoll.SSR.getLevel(),"test")).limit(ssrNum).collect(Collectors.toList()));
-        testUnitList.addAll(Stream.generate(() -> new RollResultUnit(0,YysRoll.SR.getLevel(),"test")).limit(srNum).collect(Collectors.toList()));
-        testUnitList.addAll(Stream.generate(() -> new RollResultUnit(0,YysRoll.R.getLevel(),"test")).limit(rNum).collect(Collectors.toList()));
-        testUnitList.addAll(Stream.generate(() -> new RollResultUnit(0,YysRoll.N.getLevel(),"test")).limit(nNum).collect(Collectors.toList()));
+        testUnitList.addAll(Stream.generate(() -> new RollResultUnit(0,1L,YysRoll.SP.getLevel(),"test")).limit(spNum).collect(Collectors.toList()));
+        testUnitList.addAll(Stream.generate(() -> new RollResultUnit(0,1L,YysRoll.SSR.getLevel(),"test")).limit(ssrNum).collect(Collectors.toList()));
+        testUnitList.addAll(Stream.generate(() -> new RollResultUnit(0,1L,YysRoll.SR.getLevel(),"test")).limit(srNum).collect(Collectors.toList()));
+        testUnitList.addAll(Stream.generate(() -> new RollResultUnit(0,1L,YysRoll.R.getLevel(),"test")).limit(rNum).collect(Collectors.toList()));
+        testUnitList.addAll(Stream.generate(() -> new RollResultUnit(0,1L,YysRoll.N.getLevel(),"test")).limit(nNum).collect(Collectors.toList()));
     }
 
     /**

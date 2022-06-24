@@ -274,6 +274,9 @@ public class YysRollServiceImpl implements ExpandRollService {
                     rollResultUnit = new RollResultUnit(rollUnit);
                     rollResultUnit.setSequence(rollNum);
                     rollResultUnit.setUp(up);
+                    //设置定向抽取概率
+                    rollResultUnit.setUnitRollRate(rollProb);
+                    rollResultUnit.setLevelRollRate(new BigDecimal(YysRoll.valueOf(rollUnit.getLevel()).getRollProbString()).multiply(up?upProb:BigDecimal.ONE));
                     rollResultUnitList.add(rollResultUnit);
                     //高阶添加到出货结果集
                     winResultUnitList.add(rollResultUnit);
@@ -288,6 +291,9 @@ public class YysRollServiceImpl implements ExpandRollService {
                 }
                 //高阶添加到出货结果集
                 winResultUnitList.add(rollResultUnit);
+                //设置定向抽取概率
+                rollResultUnit.setUnitRollRate(rollProb);
+                rollResultUnit.setLevelRollRate(new BigDecimal(YysRoll.valueOf(rollUnit.getLevel()).getRollProbString()).multiply(up?upProb:BigDecimal.ONE));
                 //为SSR时抽取皮肤
                 if (YysRoll.SSR.getLevel().equals(rollResultUnit.getLevel()) && rollUnit.getSpecialName() != null) {
                     rollResultUnit.setSpecial(rollSsrSkin());
@@ -365,6 +371,8 @@ public class YysRollServiceImpl implements ExpandRollService {
                 if (YysRoll.SSR.getLevel().equals(rollResultUnit.getLevel()) || YysRoll.SP.getLevel().equals(rollResultUnit.getLevel())) {
                     rollResultUnit.setUp(up);
                     up = --upNum > 0;
+                    //设置阶级抽取概率
+                    rollResultUnit.setLevelRollRate(new BigDecimal(YysRoll.valueOf(rollUnit.getLevel()).getRollProbString()).multiply(up? BigDecimal.valueOf(upRate) :BigDecimal.ONE));
                     //添加到出货结果集
                     winResultUnitList.add(rollResultUnit);
                 }

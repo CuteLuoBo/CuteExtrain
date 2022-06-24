@@ -26,8 +26,9 @@ public class RollUnit {
 
     private Float rollProb;
 
-    public RollUnit(Integer id, String level, String name) {
+    public RollUnit(Integer id,Long officialId, String level, String name) {
         this.id = id;
+        this.officialId = officialId;
         this.level = level;
         this.name = name;
     }

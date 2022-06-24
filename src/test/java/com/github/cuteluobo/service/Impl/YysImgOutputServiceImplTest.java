@@ -2,9 +2,11 @@ package com.github.cuteluobo.service.Impl;
 
 import cn.pomit.mybatis.configuration.MybatisConfiguration;
 import com.github.cuteluobo.enums.RollModel;
+import com.github.cuteluobo.enums.YysRoll;
 import com.github.cuteluobo.pojo.RollImgResult;
 import com.github.cuteluobo.pojo.RollResultData;
 import com.github.cuteluobo.pojo.RollResultUnit;
+import com.github.cuteluobo.pojo.RollUnit;
 import com.github.cuteluobo.util.YysRollUtils;
 import org.apache.ibatis.session.Configuration;
 import org.junit.jupiter.api.BeforeAll;
@@ -59,12 +61,71 @@ class YysImgOutputServiceImplTest {
         }
     }
 
+    /**
+     * 普通抽卡
+     * @throws IOException
+     */
     @Test
-    void createImgResult() throws IOException {
+    void createImgNormal() throws IOException {
+        //普通抽卡
+        rollResultData = YysRollServiceImpl.INSTANCE.roll(100,null);
+        RollImgResult rollImgResult = yysImgOutputService.createImgResult(rollResultData, "普通100", RollModel.normal);
+        assertNotNull(rollImgResult);
+        assertNotNull(rollImgResult.getBufferedImage());
+        writeOnTestFolder(rollImgResult.getBufferedImage(),"normal");
+        //普通UP抽卡
         rollResultData = YysRollServiceImpl.INSTANCE.rollUp(100,true,3,0.05f);
-        RollImgResult rollImgResult = yysImgOutputService.createImgResult(rollResultData, title, RollModel.normal);
-        BufferedImage bufferedImage = rollImgResult.getBufferedImage();
-        File writeFile = new File(testFile.getAbsolutePath() +File.separator + System.currentTimeMillis() + ".png");
+        rollImgResult = yysImgOutputService.createImgResult(rollResultData, "普通100UP", RollModel.normal);
+        assertNotNull(rollImgResult);
+        assertNotNull(rollImgResult.getBufferedImage());
+        writeOnTestFolder(rollImgResult.getBufferedImage(),"normal");
+    }
+
+    /**
+     * 活动定向抽卡
+     * @throws IOException
+     */
+    @Test
+    void createImgSpecify() throws IOException {
+        //活动定向抽卡-全图
+        rollResultData = YysRollServiceImpl.INSTANCE.rollTextForSpecifyUnit(new RollUnit(1, 1L, YysRoll.SSR.getLevel(), "test"), true);
+        RollImgResult rollImgResult = yysImgOutputService.createImgResult(rollResultData, "活动定向-全图", RollModel.specify);
+        assertNotNull(rollImgResult);
+        assertNotNull(rollImgResult.getBufferedImage());
+        writeOnTestFolder(rollImgResult.getBufferedImage(),"normal");
+
+        //活动定向抽卡-非全图
+        rollResultData = YysRollServiceImpl.INSTANCE.rollTextForSpecifyUnit(new RollUnit(1, 1L, YysRoll.SSR.getLevel(), "test"), false);
+        rollImgResult = yysImgOutputService.createImgResult(rollResultData, "活动定向-非全图", RollModel.specify);
+        assertNotNull(rollImgResult);
+        assertNotNull(rollImgResult.getBufferedImage());
+        writeOnTestFolder(rollImgResult.getBufferedImage(),"normal");
+    }
+
+    /**
+     * 普通定向抽卡
+     * @throws IOException
+     */
+    @Test
+    void createImgAssign() throws IOException {
+        RollUnit assignUnit = (RollUnit) YysRollServiceImpl.INSTANCE.getRollUnitMap().get(YysRoll.SSR.getLevel()).values().toArray()[0];
+        rollResultData = YysRollServiceImpl.INSTANCE.rollTextForAssignUnit(assignUnit,true);
+        RollImgResult rollImgResult = yysImgOutputService.createImgResult(rollResultData, "普通定向-UP", RollModel.assign);
+        assertNotNull(rollImgResult);
+        assertNotNull(rollImgResult.getBufferedImage());
+        writeOnTestFolder(rollImgResult.getBufferedImage(),"normal");
+        rollResultData = YysRollServiceImpl.INSTANCE.rollTextForAssignUnit(assignUnit,false);
+        rollImgResult = yysImgOutputService.createImgResult(rollResultData, "普通定向-无UP", RollModel.assign);
+        assertNotNull(rollImgResult);
+        assertNotNull(rollImgResult.getBufferedImage());
+        writeOnTestFolder(rollImgResult.getBufferedImage(),"normal");
+    }
+
+    /**
+     * 写入到测试文件夹中
+     */
+    private void writeOnTestFolder(BufferedImage bufferedImage,String testName) throws IOException {
+        File writeFile = new File(testFile.getAbsolutePath() + File.separator + System.currentTimeMillis() + '-' + testName + ".png");
         ImageIO.write(bufferedImage, "png", writeFile);
         System.out.println("writeFile: "+writeFile.getAbsolutePath());
     }

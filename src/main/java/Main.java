@@ -14,7 +14,7 @@ public class Main {
         initDatasource();
         ExpandRollService expandRollService = YysRollServiceImpl.INSTANCE;
 //        System.out.println(expandRollService.rollText(500, true, null, null, null).printResultText());
-        RollUnit rollUnit = new RollUnit(363,"SSR","帝释天");
+        RollUnit rollUnit = new RollUnit(363, 363L,"SSR","帝释天");
         System.out.println(expandRollService.rollTextForAssignUnit(rollUnit, false).printResultText(false,false));
 //        Logger logger = LoggerFactory.getLogger(Main.class);
 //        long startTime = System.currentTimeMillis();

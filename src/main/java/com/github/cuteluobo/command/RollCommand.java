@@ -59,7 +59,12 @@ public class RollCommand extends CompositeCommand {
 
     /**指令初始化*/
     public RollCommand() throws PermissionRegistryConflictException {
-        super(CuteExtra.INSTANCE, PRIMARY, secondCommand, "/yysRoll n 10", PermissionService.getInstance().register(new PermissionId(CuteExtra.PLUGIN_ID,PRIMARY),"阴阳师抽卡权限",CuteExtra.INSTANCE.getParentPermission()), SimpleCommandArgumentContext.EMPTY);
+        super(CuteExtra.INSTANCE, PRIMARY, secondCommand
+                ,"/yysRoll n 10"
+                , PermissionService.getInstance().register(new PermissionId(CuteExtra.PLUGIN_ID,PRIMARY)
+                ,"阴阳师抽卡权限"
+                , basePermission)
+                , SimpleCommandArgumentContext.EMPTY);
     }
 
     /**

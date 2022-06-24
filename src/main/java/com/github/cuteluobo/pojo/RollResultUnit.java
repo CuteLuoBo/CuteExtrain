@@ -1,13 +1,15 @@
 package com.github.cuteluobo.pojo;
 
+import java.math.BigDecimal;
+
 /**
  * 抽取后的结果
  * @author CuteLuoBo
  */
 public class RollResultUnit extends RollUnit {
 
-    public RollResultUnit(Integer id, String level, String name) {
-        super(id,level,name);
+    public RollResultUnit(Integer id,Long officialId, String level, String name) {
+        super(id,officialId,level,name);
     }
     public RollResultUnit(RollUnit rollUnit) {
         super(rollUnit);
@@ -23,6 +25,16 @@ public class RollResultUnit extends RollUnit {
      * 出货时的抽取次数
      */
     private Integer sequence;
+
+    /**
+     * 当前阶级的抽取概率
+     */
+    private BigDecimal levelRollRate;
+
+    /**
+     * 当前式神在同阶级中抽取概率
+     */
+    private BigDecimal unitRollRate;
 
     public Boolean getSpecial() {
         return special;
@@ -46,6 +58,22 @@ public class RollResultUnit extends RollUnit {
 
     public void setUp(Boolean up) {
         this.up = up;
+    }
+
+    public BigDecimal getLevelRollRate() {
+        return levelRollRate;
+    }
+
+    public void setLevelRollRate(BigDecimal levelRollRate) {
+        this.levelRollRate = levelRollRate;
+    }
+
+    public BigDecimal getUnitRollRate() {
+        return unitRollRate;
+    }
+
+    public void setUnitRollRate(BigDecimal unitRollRate) {
+        this.unitRollRate = unitRollRate;
     }
 
     @Override

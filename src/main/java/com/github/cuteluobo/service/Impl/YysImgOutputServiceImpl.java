@@ -271,7 +271,7 @@ public class YysImgOutputServiceImpl implements ImgOutputService {
         }
 
 
-        //====成就统计====
+        //====成就统计/定向抽卡结果====
         //容器
         //圆角弧度
         int achievementContainerRoundRate = 30;
@@ -287,10 +287,9 @@ public class YysImgOutputServiceImpl implements ImgOutputService {
 
         //背景颜色和字体颜色
         Color achievementContainerBackgroundColor = new Color(140, 181, 209, 128);
-        Color achievementContainerTitleColor = Color.BLACK;
-        //字体大小
-        int achievementTitleFontSize = 30;
-        String achievementTitle = "成就统计：";
+
+
+
         //字体与边框距离
         int achievementFontLeftSpace = 30;
         int achievementFontTopSpace = 20;
@@ -300,65 +299,151 @@ public class YysImgOutputServiceImpl implements ImgOutputService {
                 .setContainer(achievementContainerWidth, achievementContainerHeight, achievementContainerX, achievementContainerY)
                 .setContainerBackground(achievementContainerBackgroundColor)
                 .setContainerRoundRate(achievementContainerRoundRate)
-                .addContainerTitle(achievementTitle, normalFont, achievementTitleFontSize, achievementContainerTitleColor, achievementFontLeftSpace, achievementFontTopSpace)
                 .build();
         achievementContainerHelper.drawAll();
 
-        //3.成就数据统计-抽取最多式神
-        Map<Integer, RollResultUnit> unitMap = new HashMap<>(16);
-        Map<Integer, Integer> totalMap = new HashMap<>(16);
-        //数据累加
-        rollResultData.getRollResultUnitList().forEach( rollResultUnit -> {
-            unitMap.put(rollResultUnit.getId(), rollResultUnit);
-            totalMap.put(rollResultUnit.getId(), totalMap.getOrDefault(rollResultUnit.getId(), 0)+1);
-        });
-        int unitId = 0;
-        int totalNum = 0;
-        //找出最大值
-        for (Map.Entry<Integer, Integer> entry : totalMap.entrySet()
-        ) {
-            int temp = entry.getValue();
-            if (temp > totalNum) {
-                unitId = entry.getKey();
-                totalNum = temp;
-            }
-        }
+        //成就/追梦右侧式神大图
+        RollResultUnit rightShowUnit = null;
 
-        RollResultUnit maxUnit = unitMap.get(unitId);
+        //文字输出
+        List<TextDrawData> achievementList = new ArrayList<>(4);
 
-        //统计输出
-        //与标题的间隔
+        //标题
+        int achievementTitleFontSize = 30;
+        TextDrawData achievementTitleDrawData;
+        Color achievementContainerTitleColor = Color.BLACK;
+        String achievementTitle;
+
+        //其他文字与标题的间隔
         int achievementFontTopTitleSpace = 30;
         //多行文字内部间隙
         int achievementFontInsideTopSpace = 20;
+        //定向抽卡模式
+        if (rollModel == RollModel.assign || rollModel == RollModel.specify) {
+            //标题
+            achievementTitle = "定向追梦结果：";
+            //字体累加的间隔
+            int tempFontSpaceTotal = 0;
 
-        //字体大小
-        int achievement1FontSize = 20;
-        Color achievement1Color = Color.BLACK;
-        String achievement1Title = "抽取最多式神： " + maxUnit.getLevel() + " " + maxUnit.getName() + " x " + totalNum + " 次";
-        //构建成就输出
-        TextDrawData achievement1 = new TextDrawData(achievement1Title, normalFont, achievement1FontSize, achievement1Color
-                , achievementFontLeftSpace, achievementFontTopTitleSpace + achievementTitleFontSize);
-        List<TextDrawData> achievementList = new ArrayList<>(1);
-        achievementList.add(achievement1);
+            //有出货结果且不为空时
+            if (winResultUnitList != null && !winResultUnitList.isEmpty()) {
+                //获取到最后一个抽出的式神
+                RollResultUnit showUnit = winResultUnitList.get(winResultUnitList.size() - 1);
+                //指定右侧显示式神
+                rightShowUnit = showUnit ;
+                //非标题的文字字体大小
+                int achievementOtherFontSize = 20;
+                Color achievementOtherColor = Color.BLACK;
+
+                //1.出货次数
+                String achievement1 = "出货抽数： 第 " + showUnit.getSequence() + " 抽 " + showUnit.getLevel() + " - " + showUnit.getName();
+                tempFontSpaceTotal += achievementFontTopTitleSpace + achievementTitleFontSize;
+                //输出
+                TextDrawData achievement1DrawData = new TextDrawData(achievement1, normalFont, achievementOtherFontSize, achievementOtherColor
+                        , achievementFontLeftSpace, tempFontSpaceTotal);
+
+                achievementList.add(achievement1DrawData);
+
+                //2.当前阶级的抽出概率
+                BigDecimal levelRollRate = showUnit.getLevelRollRate();
+
+                String achievement2 = "定向阶级抽出概率： ";
+                if (levelRollRate != null) {
+                    achievement2 += levelRollRate.movePointRight(2) + " %";
+                } else {
+                    achievement2 += "? %";
+                }
+                tempFontSpaceTotal += achievementFontInsideTopSpace + achievementOtherFontSize;
+                //输出
+                TextDrawData achievement2DrawData = new TextDrawData(achievement2, normalFont, achievementOtherFontSize, achievementOtherColor
+                        , achievementFontLeftSpace, tempFontSpaceTotal);
+                achievementList.add(achievement2DrawData);
+
+
+                //3.当前式神同阶级抽出概率
+                BigDecimal unitRollRate = showUnit.getUnitRollRate();
+                String achievement3 = "式神定向抽出概率： ";
+                if (unitRollRate != null) {
+                    achievement3 += unitRollRate.movePointRight(2) + " %";
+                } else {
+                    achievement3 += "无";
+                }
+                tempFontSpaceTotal += achievementFontInsideTopSpace + achievementOtherFontSize;
+                //输出
+                TextDrawData achievement3DrawData = new TextDrawData(achievement3, normalFont, achievementOtherFontSize, achievementOtherColor
+                        , achievementFontLeftSpace, tempFontSpaceTotal);
+                achievementList.add(achievement3DrawData);
+
+            }
+
+        }
+        //其他抽卡模式
+        else {
+            //标题
+            achievementTitle = "成就统计：";
+            //3.成就数据统计-抽取最多式神
+            Map<Integer, RollResultUnit> unitMap = new HashMap<>(16);
+            Map<Integer, Integer> totalMap = new HashMap<>(16);
+            //数据累加
+            rollResultData.getRollResultUnitList().forEach( rollResultUnit -> {
+                unitMap.put(rollResultUnit.getId(), rollResultUnit);
+                totalMap.put(rollResultUnit.getId(), totalMap.getOrDefault(rollResultUnit.getId(), 0)+1);
+            });
+            int unitId = 0;
+            int totalNum = 0;
+            //找出最大值
+            for (Map.Entry<Integer, Integer> entry : totalMap.entrySet()
+            ) {
+                int temp = entry.getValue();
+                if (temp > totalNum) {
+                    unitId = entry.getKey();
+                    totalNum = temp;
+                }
+            }
+            RollResultUnit maxUnit = unitMap.get(unitId);
+            //设置为右侧输出式神
+            rightShowUnit = maxUnit;
+
+            //生成绘制数据
+
+
+            //字体大小
+            int achievement1FontSize = 20;
+            Color achievement1Color = Color.BLACK;
+            String achievement1Title = "抽取最多式神： " + maxUnit.getLevel() + " " + maxUnit.getName() + " x " + totalNum + " 次";
+            //构建成就输出
+            TextDrawData achievement1 = new TextDrawData(achievement1Title, normalFont, achievement1FontSize, achievement1Color
+                    , achievementFontLeftSpace, achievementFontTopTitleSpace + achievementTitleFontSize);
+
+            achievementList.add(achievement1);
+            //TODO 增加更多输出
+        }
+        //标题文字数据
+        achievementTitleDrawData = new TextDrawData(achievementTitle, normalFont, achievementTitleFontSize, achievementContainerTitleColor
+                , achievementFontLeftSpace, achievementFontTopSpace);
+        achievementList.add(achievementTitleDrawData);
+        //设置列表并输出
         //替换原容器文本数据并绘制
         achievementContainerHelper.setTextDrawList(achievementList);
         achievementContainerHelper.drawAllText();
-        //TODO 增加更多成就统计
 
-        //成就/追梦右侧式神大图
-        RollResultUnit rightShowUnit = maxUnit;
-        int rightShowUnitStartX = achievementContainerX + 600;
-        int rightShowUnitStartY = achievementContainerY - 50;
-        //获取文件并绘制
-        File rightShowUnitBodyFile = new File(normalResourceFolder.getAbsolutePath() + File.separator + "body" + File.separator + rightShowUnit.getOfficialId() + ".png");
-        if (rightShowUnitBodyFile.exists()) {
-            BufferedImage rightShowUnitImageBuffer = ImageIO.read(rightShowUnitBodyFile);
-            graphics2D.drawImage(rightShowUnitImageBuffer, rightShowUnitStartX, rightShowUnitStartY, 400, 330, null);
-        } else {
-            logger.error("ID为{}的式神身体大图不存在", rightShowUnit.getOfficialId());
+
+        //右侧式神大图
+        if (rightShowUnit != null) {
+            //TODO 增加右侧式神的阶级和名称标识
+            int rightShowUnitStartX = achievementContainerX + 600;
+            int rightShowUnitStartY = achievementContainerY - 50;
+            //获取文件并绘制
+            File rightShowUnitBodyFile = new File(normalResourceFolder.getAbsolutePath() + File.separator + "body" + File.separator + rightShowUnit.getOfficialId() + ".png");
+            if (rightShowUnitBodyFile.exists()) {
+                BufferedImage rightShowUnitImageBuffer = ImageIO.read(rightShowUnitBodyFile);
+                graphics2D.drawImage(rightShowUnitImageBuffer, rightShowUnitStartX, rightShowUnitStartY, 400, 330, null);
+            } else {
+                logger.error("ID为{}的式神身体大图不存在", rightShowUnit.getOfficialId());
+            }
         }
-        //TODO 增加右侧式神的阶级和名称标识
+
+
 
         //TODO 增加定向抽取时的额外界面
 

@@ -4,8 +4,10 @@ package com.github.cuteluobo.service.Impl;
 import cn.pomit.mybatis.configuration.MybatisConfiguration;
 import com.github.cuteluobo.CuteExtra;
 import com.github.cuteluobo.enums.YysRoll;
+import com.github.cuteluobo.mapper.YysUnitMapper;
 import com.github.cuteluobo.pojo.RollResultData;
 import com.github.cuteluobo.pojo.RollResultUnit;
+import com.github.cuteluobo.pojo.RollUnit;
 import com.github.cuteluobo.util.YysRollUtils;
 import org.apache.ibatis.session.Configuration;
 import org.junit.jupiter.api.BeforeAll;
@@ -102,8 +104,66 @@ class YysRollServiceImplTest {
 //        rollResultData.getWinResultUnitList().forEach(System.out::println);
         assertTrue(rollResultUnitList.stream().filter(unit -> Boolean.TRUE.equals(unit.getUp())).count() <= upNum);
         assertTrue(rollResultData.getWinResultUnitList().stream().filter(unit -> Boolean.TRUE.equals(unit.getUp())).count() <= upNum);
+    }
 
+    /**
+     * 活动定向式神抽卡
+     */
+    @Test
+    public void specifyRoll() {
+        RollUnit testUnit = new RollUnit(0, 200L, YysRoll.SP.getLevel(), "test");
+        System.out.println("------- specifyRoll x "+testUnit.getLevel()+'-'+testUnit.getName()+" ------");
+        //全图鉴
+        RollResultData rollResultDataByFull = yysRollService.rollTextForSpecifyUnit(testUnit, true);
+        //验证生成
+        assertNotNull(rollResultDataByFull);
+        //验证必定出货
+        List<RollResultUnit> winList = rollResultDataByFull.getWinResultUnitList();
+        assertNotNull(winList);
+        assertFalse(winList.isEmpty());
+        //最后一个出货的必定为指定式神
+        assertEquals(testUnit.getId(), winList.get(winList.size() - 1).getId());
 
+        //非全图鉴
+        RollResultData rollResultData = yysRollService.rollTextForSpecifyUnit(testUnit, false);
+        //验证生成
+        assertNotNull(rollResultData);
+        //验证必定出货
+        List<RollResultUnit> winList2 = rollResultData.getWinResultUnitList();
+        assertNotNull(winList2);
+        assertFalse(winList2.isEmpty());
+        //最后一个出货的必定为指定式神
+        assertEquals(testUnit.getId(), winList2.get(winList2.size() - 1).getId());
+    }
+
+    /**
+     * 普通定向式神抽卡
+     */
+    @Test
+    public void assignRoll() {
+        RollUnit testUnit = (RollUnit) YysRollServiceImpl.INSTANCE.getRollUnitMap().get(YysRoll.SSR.getLevel()).values().toArray()[0];
+        System.out.println("------- assignRoll x "+testUnit.getLevel()+'-'+testUnit.getName()+" ------");
+        //UP概率抽取
+        RollResultData rollResultDataByUp = yysRollService.rollTextForAssignUnit(testUnit, true);
+        //验证生成
+        assertNotNull(rollResultDataByUp);
+        //验证必定出货
+        List<RollResultUnit> winList = rollResultDataByUp.getWinResultUnitList();
+        assertNotNull(winList);
+        assertFalse(winList.isEmpty());
+        //最后一个出货的必定为指定式神
+        assertEquals(testUnit.getId(), winList.get(winList.size() - 1).getId());
+
+        //无UP抽取
+        RollResultData rollResultData = yysRollService.rollTextForAssignUnit(testUnit, false);
+        //验证生成
+        assertNotNull(rollResultData);
+        //验证必定出货
+        List<RollResultUnit> winList2 = rollResultData.getWinResultUnitList();
+        assertNotNull(winList2);
+        assertFalse(winList2.isEmpty());
+        //最后一个出货的必定为指定式神
+        assertEquals(testUnit.getId(), winList2.get(winList2.size() - 1).getId());
 
     }
 
