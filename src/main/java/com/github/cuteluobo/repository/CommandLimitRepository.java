@@ -22,7 +22,7 @@ public class CommandLimitRepository {
 //    private Map<Long, Map<Long, Map<String,CommandLimit>>> tempMap = new HashMap<>();
 
     /**
-     //     * <群号+个人号+权限名称，权限对象>>
+     //     * <群号+个人号+指令名称，权限对象>>
      //     */
     private Map<String, CommandLimit> tempMap ;
 

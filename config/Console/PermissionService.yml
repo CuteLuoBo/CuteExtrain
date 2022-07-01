@@ -3,7 +3,7 @@ grantedPermissionMap:
     - console
   'console:*': 
     - u635419450
-  'com.github.cuteluobo.cute-extra:*':
-    - u635419450
-  'com.github.cuteluobo.cute-extra:base':
+  'com.github.cuteluobo.cute-extra:*': 
+    - 'u*'
+  'com.github.cuteluobo.cute-extra:yroll': 
     - 'u*'

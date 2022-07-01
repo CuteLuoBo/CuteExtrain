@@ -12,10 +12,10 @@ import com.github.cuteluobo.repository.GlobalConfig;
 import com.github.cuteluobo.repository.InvitedEventRepository;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.console.command.CommandManager;
-import net.mamoe.mirai.console.permission.Permission;
-import net.mamoe.mirai.console.permission.PermissionId;
-import net.mamoe.mirai.console.permission.PermissionRegistryConflictException;
-import net.mamoe.mirai.console.permission.PermissionService;
+import net.mamoe.mirai.console.command.CommandSender;
+import net.mamoe.mirai.console.command.MemberCommandSender;
+import net.mamoe.mirai.console.command.UserCommandSender;
+import net.mamoe.mirai.console.permission.*;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescriptionBuilder;
 import net.mamoe.mirai.event.GlobalEventChannel;
@@ -26,7 +26,9 @@ import net.mamoe.mirai.message.data.MessageChainBuilder;
 import net.mamoe.mirai.utils.LoggerAdapters;
 import net.mamoe.mirai.utils.MiraiLogger;
 import org.apache.ibatis.session.Configuration;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
+import net.mamoe.mirai.console.permission.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,9 +53,16 @@ public final class CuteExtra extends JavaPlugin {
     public static final CuteExtra INSTANCE = new CuteExtra();
     public static final String PLUGIN_NAME = "cute-extra 模拟抽卡插件";
     public static final String PLUGIN_ID = "com.github.cuteluobo.cute-extra";
-    public static final String PLUGIN_VERSION = "0.4.1";
+    public static final String PLUGIN_VERSION = "0.4.2";
     public static final String DATABASE_FILE_NAME = "database.sqlite";
-    public static Permission basePermission ;
+    /**
+     * 基础权限
+     */
+    private Permission basePermission ;
+    /**
+     * 管理权限
+     */
+    private Permission adminPermission ;
 
 
     /**初始化*/
@@ -115,7 +124,11 @@ public final class CuteExtra extends JavaPlugin {
 
     /**初始化权限*/
     private void permissionExecute() throws PermissionRegistryConflictException {
-        basePermission = PermissionService.getInstance().register(new PermissionId(PLUGIN_ID,"base"),"插件默认权限", Permission.getRootPermission());
+        basePermission = PermissionService.getInstance().register(new PermissionId(PLUGIN_ID,"base"),"插件默认权限", this.getParentPermission());
+        adminPermission = PermissionService.getInstance().register(new PermissionId(PLUGIN_ID,"admin"),"插件管理员权限", this.getParentPermission());
+        //TODO 找到能在插件中赋予所有用户默认权限的方法
+//        PermissionService.getInstance().permit(?,basePermission);
+//        PermissionService.getInstance().permit(AbstractPermitteeId.AnyUser.INSTANCE, basePermission);
     }
 
     private void commandReg() throws PermissionRegistryConflictException {
@@ -184,4 +197,19 @@ public final class CuteExtra extends JavaPlugin {
 //        LoggerAdapters.useLog4j2();
     }
 
+    public Permission getBasePermission() {
+        return basePermission;
+    }
+
+    public void setBasePermission(Permission basePermission) {
+        this.basePermission = basePermission;
+    }
+
+    public Permission getAdminPermission() {
+        return adminPermission;
+    }
+
+    public void setAdminPermission(Permission adminPermission) {
+        this.adminPermission = adminPermission;
+    }
 }

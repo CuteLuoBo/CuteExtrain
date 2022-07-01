@@ -37,6 +37,15 @@ public class YysImgOutputServiceImpl implements ImgOutputService {
 
     public static final YysImgOutputServiceImpl INSTANCE = new YysImgOutputServiceImpl();
 
+    //TODO 增加从官网下载式神图片的服务类
+    //所有式神列表（无显示是否可抽取）：https://yys.res.netease.com/pc/zt/20161108171335/js/app/all_shishen.json
+    //式神头像https://yys.res.netease.com/pc/zt/20161108171335/data/shishen/{id}.png
+    //式神身体：https://yys.res.netease.com/pc/zt/20161108171335/data/shishen_big_beforeAwake/{id}.png
+    //素色+花体式神名称+阶级：https://yys.res.netease.com/pc/gw/20180913151832/data/name/{id}.png
+    //式神书签类半身：https://yys.res.netease.com/pc/zt/20161108171335/data/mark_btn/{id}.png
+
+    //TODO 额外增加抽象，对结果集进行解析封装，或使图片输出类，更通用
+
     /**
      * 默认资源加载文件夹
      */
@@ -83,7 +92,7 @@ public class YysImgOutputServiceImpl implements ImgOutputService {
         try {
             normalFont = Font.createFont(Font.PLAIN, new File(normalResourceFolder.getAbsolutePath() + File.separator + "font.ttf"));
         } catch (Exception e) {
-            logger.error("无法加载字体，可能造成显示效果异常!",e);
+            logger.error("无法加载字体，可能造成显示效果异常!建议使用字体：田氏颜体大字库",e);
             normalFont = Font.decode(null);
         }
 

@@ -22,10 +22,13 @@ public class YysRollResultData extends RollResultData {
      */
     @Override
     public String printResultText(boolean showAllLevel, boolean showAllTip){
-        final StringBuffer sb = new StringBuffer();
+        final StringBuilder sb = new StringBuilder();
         List<RollResultUnit> rollResultUnitList = getRollResultUnitList();
         //创建map副本
-        Map<Integer,String> tempTipMap = new LinkedHashMap<>(getTipMap());
+        Map<Integer,String> tempTipMap = new LinkedHashMap<>();
+        if (getTipMap() != null) {
+            tempTipMap = getTipMap();
+        }
         //不显示全部提示时，获取最后一个提示
         if (!showAllTip && tempTipMap.size() > 0) {
             //使用反射获取最后一个提示，清空原提示数组后保留最后一个（JDK9后有反射警告，换成另一种方法）

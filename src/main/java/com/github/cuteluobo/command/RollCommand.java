@@ -45,7 +45,6 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Objects;
 
-import static com.github.cuteluobo.CuteExtra.basePermission;
 
 /**
  * https://github.com/mamoe/mirai-console/blob/master/docs/Commands.md
@@ -63,7 +62,7 @@ public class RollCommand extends CompositeCommand {
                 ,"/yysRoll n 10"
                 , PermissionService.getInstance().register(new PermissionId(CuteExtra.PLUGIN_ID,PRIMARY)
                 ,"阴阳师抽卡权限"
-                , basePermission)
+                , CuteExtra.INSTANCE.getBasePermission())
                 , SimpleCommandArgumentContext.EMPTY);
     }
 
@@ -262,6 +261,19 @@ public class RollCommand extends CompositeCommand {
         BufferedImage bufferedImage = rollImgResult.getBufferedImage();
         File imageFile = FileIoUtils.createFileTemp("yysRoll", fileRollName + "-" + rollResultData.getRollNum() + ".jpg");
         ImageIO.write(bufferedImage, "jpg", imageFile);
-        return Contact.uploadImage(contact, imageFile);
+        Image image = Contact.uploadImage(contact, imageFile);
+        //缓存文件删除和相关提示
+        boolean deleteFile = false;
+        boolean alreadyShowWarn = false;
+        try {
+            deleteFile = imageFile.delete();
+        } catch (SecurityException securityException) {
+            logger.warn("自动删除缓存图片失败，路径：{}",imageFile.getAbsolutePath(),securityException);
+            alreadyShowWarn = true;
+        }
+        if (!deleteFile && alreadyShowWarn) {
+            logger.warn("未知原因导致删除缓存图片失败，路径：{}", imageFile.getAbsolutePath());
+        }
+        return image;
     }
 }

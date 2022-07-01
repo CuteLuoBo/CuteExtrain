@@ -21,5 +21,35 @@ public class FileIoUtils {
         return new File(ResourceLoader.INSTANCE.getNormalTempFolder().getAbsolutePath() + File.separator + modelName + new Random().nextInt(10) + "-" + System.currentTimeMillis() + fileName);
     }
 
-
+    /**
+     * 删除文件夹内文件
+     * @param folder           文件夹
+     * @param deleteFolderSelf 是否删除文件夹本身
+     * @throws SecurityException 删除错误时提示
+     */
+    public static void deleteFolderFile(File folder, boolean deleteFolderSelf) throws SecurityException {
+        if (folder == null) {
+            return;
+        }
+        //为文件夹时才执行删除
+        if (folder.isDirectory()) {
+            //遍历内部文件执行删除
+            File[] files = folder.listFiles();
+            if (files != null) {
+                for (File f :
+                        files) {
+                    //为文件夹时，递归删除
+                    if (f.isDirectory()) {
+                        deleteFolderFile(f, true);
+                    } else {
+                        f.delete();
+                    }
+                }
+            }
+            //删除文件夹自身
+            if (deleteFolderSelf) {
+                folder.delete();
+            }
+        }
+    }
 }

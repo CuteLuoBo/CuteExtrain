@@ -1,6 +1,7 @@
 package com.github.cuteluobo.repository;
 
 import com.github.cuteluobo.CuteExtra;
+import com.github.cuteluobo.util.FileIoUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,10 +24,13 @@ public class ResourceLoader {
         try {
             normalResourceFolder = new File(CuteExtra.INSTANCE.getDataFolder().getAbsolutePath()+File.separator+"imgResource");
             normalTempFolder = new File(CuteExtra.INSTANCE.getDataFolder().getAbsolutePath()+File.separator+"temp");
+            //每次启动时，删除temp内所有文件
+            FileIoUtils.deleteFolderFile(normalTempFolder,false);
+            logger.warn("提示：插件资源路径中的temp文件夹在启动时会自动清空，请勿在此目录内存放其他文件");
         } catch (Throwable throwable) {
-            logger.error("使用插件的数据路径错误，切换为外置路径",throwable);
             normalResourceFolder = new File(String.valueOf(this.getClass().getResource("imgResource")));
             normalTempFolder = new File(String.valueOf(this.getClass().getResource("temp")));
+            logger.error("使用插件的数据路径错误，切换为外置路径:{}",normalResourceFolder.getAbsolutePath(),throwable);
         }
         //创建文件夹
         if (!normalResourceFolder.exists()) {
