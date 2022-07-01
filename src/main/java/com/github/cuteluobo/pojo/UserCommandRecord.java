@@ -1,6 +1,7 @@
 package com.github.cuteluobo.pojo;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -29,6 +30,8 @@ public class UserCommandRecord {
 
     public UserCommandRecord(Long userId) {
         this.userId = userId;
+        groupCommandMap = new HashMap<>();
+        privateCommandMap = new HashMap<>();
     }
 
     public Long getUserId() {

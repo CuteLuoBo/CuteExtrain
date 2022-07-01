@@ -3,6 +3,7 @@ package com.github.cuteluobo.pojo;
 import com.github.cuteluobo.enums.TriggerType;
 
 /**
+ * 指令执行缓存
  * @author CuteLuoBo
  */
 public class CommandExecTemp {

@@ -56,7 +56,11 @@ public class CommandLimitUtils {
         } else {
             commandMap = userCommandRecord.getPrivateCommandMap();
         }
-        return commandMap.get(commandString);
+        if (commandMap == null) {
+            return null;
+        } else {
+            return commandMap.get(commandString);
+        }
     }
 
     /**
@@ -158,5 +162,9 @@ public class CommandLimitUtils {
 
     public void setRecordMap(Map<Long, UserCommandRecord> recordMap) {
         this.recordMap = recordMap;
+    }
+
+    public void clearAllRecord() {
+        this.recordMap.clear();
     }
 }

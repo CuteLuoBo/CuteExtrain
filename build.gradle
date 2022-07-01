@@ -15,7 +15,7 @@ plugins {
 }
 
 group = 'com.github.cuteluobo'
-version = '0.4.2'
+version = '0.4.2-a'
 def miraiCoreVersion = '2.9.2'
 def miraiConsoleVersion = '2.9.2'
 
