@@ -6,6 +6,7 @@ import com.github.cuteluobo.repository.InvitedEventRepository;
 import com.github.cuteluobo.service.Impl.YysRollServiceImpl;
 import net.mamoe.mirai.console.command.CommandOwner;
 import net.mamoe.mirai.console.command.CommandSender;
+import net.mamoe.mirai.console.command.CommandSenderOnMessage;
 import net.mamoe.mirai.console.command.CompositeCommand;
 import net.mamoe.mirai.console.command.descriptor.SimpleCommandArgumentContext;
 import net.mamoe.mirai.console.command.java.JSimpleCommand;
@@ -22,6 +23,7 @@ import net.mamoe.mirai.event.events.NewFriendRequestEvent;
 import net.mamoe.mirai.message.data.At;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.MessageChainBuilder;
+import net.mamoe.mirai.message.data.QuoteReply;
 
 /**
  * @author CuteLuoBo
@@ -52,8 +54,11 @@ public class InvitedCommand  extends CompositeCommand {
         if (sender.getUser() != null && GlobalConfig.ADMIN_ID == sender.getUser().getId()) {
             //初始化消息builder
             MessageChainBuilder messageChainBuilder = new MessageChainBuilder();
-            //添加at
-            messageChainBuilder.append(new At(sender.getUser().getId())).append("\n");
+            //回复消息
+            if (sender instanceof CommandSenderOnMessage) {
+                CommandSenderOnMessage senderOnMessage = (CommandSenderOnMessage) sender;
+                messageChainBuilder.append(new QuoteReply(senderOnMessage.getFromEvent().getSource()));
+            }
             //获取缓存事件
             BotInvitedJoinGroupRequestEvent event = InvitedEventRepository.INSTANCE.getGroupInvitedJoinEventMap().get(groupId);
             if (event == null) {
@@ -62,12 +67,11 @@ public class InvitedCommand  extends CompositeCommand {
                 if (opinion) {
                     event.accept();
                     messageChainBuilder.append("群邀请已通过");
-                    InvitedEventRepository.INSTANCE.getGroupInvitedJoinEventMap().remove(groupId);
                 } else {
                     event.ignore();
                     messageChainBuilder.append("群邀请已忽略");
-                    InvitedEventRepository.INSTANCE.getGroupInvitedJoinEventMap().remove(groupId);
                 }
+                InvitedEventRepository.INSTANCE.getGroupInvitedJoinEventMap().remove(groupId);
             }
             sender.sendMessage(messageChainBuilder.build());
             return true;
@@ -88,8 +92,11 @@ public class InvitedCommand  extends CompositeCommand {
         if (sender.getUser() != null && GlobalConfig.ADMIN_ID == sender.getUser().getId()) {
             //初始化消息builder
             MessageChainBuilder messageChainBuilder = new MessageChainBuilder();
-            //添加at
-            messageChainBuilder.append(new At(sender.getUser().getId())).append("\n");
+            //回复消息
+            if (sender instanceof CommandSenderOnMessage) {
+                CommandSenderOnMessage senderOnMessage = (CommandSenderOnMessage) sender;
+                messageChainBuilder.append(new QuoteReply(senderOnMessage.getFromEvent().getSource()));
+            }
             //获取缓存事件
             NewFriendRequestEvent event = InvitedEventRepository.INSTANCE.getFriendRequestEventMap().get(id);
             if (event == null) {
@@ -98,12 +105,11 @@ public class InvitedCommand  extends CompositeCommand {
                 if (opinion) {
                     event.accept();
                     messageChainBuilder.append("好友添加申请已通过");
-                    InvitedEventRepository.INSTANCE.getFriendRequestEventMap().remove(id);
                 } else {
                     event.reject(addBlackList);
-                    messageChainBuilder.append("好友添加申请已拒绝" + (addBlackList ? "+拉黑" : ""));
-                    InvitedEventRepository.INSTANCE.getFriendRequestEventMap().remove(id);
+                    messageChainBuilder.append("好友添加申请已拒绝").append(addBlackList ? "+拉黑" : "");
                 }
+                InvitedEventRepository.INSTANCE.getFriendRequestEventMap().remove(id);
             }
             sender.sendMessage(messageChainBuilder.build());
             return true;

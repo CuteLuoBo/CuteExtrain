@@ -82,8 +82,11 @@ public class RollCommand extends CompositeCommand {
         long userId = 0;
         if (user != null) {
             userId = user.getId();
-            chainBuilder.append(new At(user.getId()));
-            chainBuilder.append("\n");
+            //回复消息
+            if (sender instanceof CommandSenderOnMessage) {
+                CommandSenderOnMessage senderOnMessage = (CommandSenderOnMessage) sender;
+                chainBuilder.append(new QuoteReply(senderOnMessage.getFromEvent().getSource()));
+            }
         }
         //TODO 增加时间统计
         String title = rollNum + "抽" + (up ? "UP" : "") + "模拟抽卡结果：\n";
@@ -133,8 +136,11 @@ public class RollCommand extends CompositeCommand {
             User user = sender.getUser();
             if (user != null) {
 //                chainBuilder.append(MessageSource.quote(messageEvent.getMessage()));
-                chainBuilder.append(new At(user.getId()));
-                chainBuilder.append("\n");
+                //回复消息
+                if (sender instanceof CommandSenderOnMessage) {
+                    CommandSenderOnMessage senderOnMessage = (CommandSenderOnMessage) sender;
+                    chainBuilder.append(new QuoteReply(senderOnMessage.getFromEvent().getSource()));
+                }
             }
 //            chainBuilder.append("定向概率UP："+yysUnit.getName()+"("+(allBuff?"全图鉴":"非全图")+") 模拟抽卡结果：\n");
             String title = yysUnit.getLevel()+" "+yysUnit.getName()+" ("+(allBuff?"全图鉴":"非全图")+") 追梦结果：\n";
@@ -186,9 +192,10 @@ public class RollCommand extends CompositeCommand {
             //发送信息
             MessageChainBuilder chainBuilder = new MessageChainBuilder();
             User user = sender.getUser();
-            if (user != null) {
-                chainBuilder.append(new At(user.getId()));
-                chainBuilder.append("\n");
+            //回复消息
+            if (sender instanceof CommandSenderOnMessage) {
+                CommandSenderOnMessage senderOnMessage = (CommandSenderOnMessage) sender;
+                chainBuilder.append(new QuoteReply(senderOnMessage.getFromEvent().getSource()));
             }
             String title = yysUnit.getLevel()+" "+yysUnit.getName()+" ("+(upBuff?"UP":"无UP")+") 追梦结果：\n";
             RollResultData rollResultData = YysRollServiceImpl.INSTANCE.rollTextForAssignUnit(new RollUnit(yysUnit), upBuff);
@@ -215,9 +222,10 @@ public class RollCommand extends CompositeCommand {
     private MessageChain buildNormalMessage(CommandSender sender,String message) {
         MessageChainBuilder chainBuilder = new MessageChainBuilder();
         User user = sender.getUser();
-        if (user != null) {
-            chainBuilder.append(new At(user.getId()));
-            chainBuilder.append("\n");
+        //回复消息
+        if (sender instanceof CommandSenderOnMessage) {
+            CommandSenderOnMessage senderOnMessage = (CommandSenderOnMessage) sender;
+            chainBuilder.append(new QuoteReply(senderOnMessage.getFromEvent().getSource()));
         }
         chainBuilder.append(message);
         return chainBuilder.build();

@@ -7,3 +7,5 @@ grantedPermissionMap:
     - 'u*'
   'com.github.cuteluobo.cute-extra:yroll': 
     - 'u*'
+  'com.github.cuteluobo.cute-extra:base': 
+    - 'u*'

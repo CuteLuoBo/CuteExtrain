@@ -62,4 +62,15 @@ public class CommandExecTemp {
     public void setNumber(int number) {
         this.number = number;
     }
+
+    @Override
+    public String toString() {
+        final StringBuffer sb = new StringBuffer("CommandExecTemp{");
+        sb.append("firstTime=").append(firstTime);
+        sb.append(", number=").append(number);
+        sb.append(", trigger=").append(trigger);
+        sb.append(", triggerEndTime=").append(triggerEndTime);
+        sb.append('}');
+        return sb.toString();
+    }
 }

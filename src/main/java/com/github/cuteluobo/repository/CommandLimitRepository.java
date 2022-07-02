@@ -96,7 +96,28 @@ public class CommandLimitRepository {
      * @return 指令限制对象，无对应结果时为null
      */
     public CommandLimit getCommandLimit(Long groupId, Long userId,String primary) {
-        return tempMap.get(createKey(groupId, userId, primary));
+        //第一优先-完全匹配
+        CommandLimit allMatch = tempMap.get(createKey(groupId, userId, primary));
+        if (allMatch != null) {
+            return allMatch;
+        }
+        //第二优先-用户ID匹配
+        CommandLimit userMatch = tempMap.get(createKey(null, userId, primary));
+        if (userMatch != null) {
+            return userMatch;
+        }
+
+        //第三优先-群ID匹配
+        CommandLimit groupMatch = tempMap.get(createKey(groupId, null, primary));
+        if (groupMatch != null) {
+            return groupMatch;
+        }
+        //第四优先-全局匹配
+        CommandLimit globalMatch = tempMap.get(createKey(null, null, primary));
+        if (globalMatch != null) {
+            return globalMatch;
+        }
+        return null;
     }
 
 }

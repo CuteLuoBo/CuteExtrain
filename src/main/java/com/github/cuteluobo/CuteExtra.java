@@ -54,7 +54,7 @@ public final class CuteExtra extends JavaPlugin {
     public static final CuteExtra INSTANCE = new CuteExtra();
     public static final String PLUGIN_NAME = "cute-extra 模拟抽卡插件";
     public static final String PLUGIN_ID = "com.github.cuteluobo.cute-extra";
-    public static final String PLUGIN_VERSION = "0.4.2";
+    public static final String PLUGIN_VERSION = "0.4.3";
     public static final String DATABASE_FILE_NAME = "database.sqlite";
     /**
      * 基础权限
@@ -97,26 +97,34 @@ public final class CuteExtra extends JavaPlugin {
 //        //群邀请监听
         Listener botInvitedJoinGroupRequestEventListener = GlobalEventChannel.INSTANCE.subscribeAlways(BotInvitedJoinGroupRequestEvent.class, event -> {
             MessageChain chain = new MessageChainBuilder()
-                    .append("群加入邀请事件消息 ID: ").append(event.getEventId() + "\n")
-                    .append("邀请人：").append(event.getInvitorNick()).append("(" + event.getInvitorId() + ")\n")
-                    .append("对应群：").append(event.getGroupName()).append("(" + event.getGroupId() + ")\n")
-                    .append("输入/invited 或/i group/g <群号> <y/n> 来处理事件\n")
-                    .append("例:/i g 1234567 n -拒绝1234567群邀请\n")
+                    .append("群加入邀请事件消息 ID: ").append(String.valueOf(event.getEventId())).append("\n")
+                    .append("邀请人：").append(event.getInvitorNick()).append("(").append(String.valueOf(event.getInvitorId())).append(")\n")
+                    .append("对应群：").append(event.getGroupName()).append("(").append(String.valueOf(event.getGroupId())).append(")\n")
+                    .append("输入/invited 或/i group/g <群号> <ture/false> 来处理事件\n")
+                    .append("例:/i g 1234567 ture -拒绝1234567群邀请\n")
                     .build();
-            event.getBot().getFriend(GlobalConfig.ADMIN_ID).sendMessage(chain);
+            if (event.getBot().getFriend(GlobalConfig.ADMIN_ID) != null) {
+                event.getBot().getFriend(GlobalConfig.ADMIN_ID).sendMessage(chain);
+            } else {
+                logger.warning("机器人没有管理员"+GlobalConfig.ADMIN_ID+"好友，无法发送通知");
+            }
             //缓存事件
             InvitedEventRepository.INSTANCE.getGroupInvitedJoinEventMap().put(event.getGroupId(),event);
         });
         //好友申请监听
         Listener botInvitedFriendsRequestEventListener = GlobalEventChannel.INSTANCE.subscribeAlways(NewFriendRequestEvent.class, event -> {
             MessageChain chain = new MessageChainBuilder()
-                    .append("好友添加事件消息 ID: ").append(event.getEventId() + "\n")
-                    .append("添加人：").append(event.getFromNick()).append("(" + event.getFromId() + ")\n")
-                    .append("来自群：").append(event.getFromGroup().getName()).append("(" + event.getFromGroupId() + ")\n")
-                    .append("好友申请消息：").append(event.getMessage())
+                    .append("好友添加事件消息 ID: ").append(String.valueOf(event.getEventId())).append("\n")
+                    .append("添加人：").append(event.getFromNick()).append("(").append(String.valueOf(event.getFromId())).append(")\n")
+                    .append("来自群：").append(event.getFromGroup()==null?"无":event.getFromGroup().getName()).append("(").append(String.valueOf(event.getFromGroupId())).append(")\n")
+                    .append("好友申请消息：").append(event.getMessage()).append("\n")
                     .append("默认同意\n")
                     .build();
-            event.getBot().getFriend(GlobalConfig.ADMIN_ID).sendMessage(chain);
+            if (event.getBot().getFriend(GlobalConfig.ADMIN_ID) != null) {
+                event.getBot().getFriend(GlobalConfig.ADMIN_ID).sendMessage(chain);
+            } else {
+                logger.warning("机器人没有管理员"+GlobalConfig.ADMIN_ID+"好友，无法发送通知");
+            }
             event.accept();
             //非默认通过时，缓存事件进行处理
 //            InvitedEventRepository.INSTANCE.getFriendRequestEventMap().put(event.getFromId(),event);
