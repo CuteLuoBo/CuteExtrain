@@ -18,6 +18,7 @@ import net.mamoe.mirai.console.command.UserCommandSender;
 import net.mamoe.mirai.console.permission.*;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescriptionBuilder;
+import net.mamoe.mirai.contact.User;
 import net.mamoe.mirai.event.GlobalEventChannel;
 import net.mamoe.mirai.event.Listener;
 import net.mamoe.mirai.event.events.*;
@@ -128,7 +129,7 @@ public final class CuteExtra extends JavaPlugin {
         adminPermission = PermissionService.getInstance().register(new PermissionId(PLUGIN_ID,"admin"),"插件管理员权限", this.getParentPermission());
         //TODO 找到能在插件中赋予所有用户默认权限的方法
 //        PermissionService.getInstance().permit(?,basePermission);
-//        PermissionService.getInstance().permit(AbstractPermitteeId.AnyUser.INSTANCE, basePermission);
+        PermissionService.permit(AbstractPermitteeId.AnyUser.INSTANCE, basePermission.getId());
     }
 
     private void commandReg() throws PermissionRegistryConflictException {

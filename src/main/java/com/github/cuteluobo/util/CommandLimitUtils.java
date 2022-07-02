@@ -1,7 +1,13 @@
 package com.github.cuteluobo.util;
 
+import com.github.cuteluobo.enums.TriggerType;
+import com.github.cuteluobo.model.CommandLimit;
 import com.github.cuteluobo.pojo.CommandExecTemp;
 import com.github.cuteluobo.pojo.UserCommandRecord;
+import com.github.cuteluobo.repository.CommandLimitRepository;
+import net.mamoe.mirai.message.data.At;
+import net.mamoe.mirai.message.data.MessageChain;
+import net.mamoe.mirai.message.data.MessageChainBuilder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -153,6 +159,58 @@ public class CommandLimitUtils {
         commandExecTemp.setNumber(commandExecTemp.getNumber()+1);
         commandMap.put(commandString, commandExecTemp);
         return commandMap;
+    }
+
+    /**
+     * 对传入指令进行验证，并根据结果处理记录并返回触发结果
+     * 用于命令执行前判断拦截，已执行次数到达限制条件时就会返回触发条件
+     * @param userId        用户ID
+     * @param groupId       群ID
+     * @param primary       指令前缀
+     * @param commandLimit  指令限制对象
+     * @return 触发结果，为null时说明不设限
+     */
+    public CommandExecTemp commandVerify(Long userId, Long groupId, String primary, CommandLimit commandLimit) {
+        //无指令限制时，直接返回null
+        if (commandLimit == null) {
+            return null;
+        }
+        //指令处理时间
+        long nowTime = System.currentTimeMillis();
+        //获取当前记录的执行记录
+        CommandExecTemp commandExecTemp = getCommandRecord(userId, groupId, primary);
+        if (commandExecTemp != null) {
+            //当在周期时间内
+            if ((commandExecTemp.getFirstTime() - nowTime) / 1000 < commandLimit.getCycleSecond()) {
+                //指令执行次数达到限制时
+                if (commandExecTemp.getNumber() >= commandLimit.getCycleNum()) {
+                    //获取触发效果类型
+                    TriggerType triggerType = commandExecTemp.getTrigger();
+                    //没有设置过触发效果时
+                    if (triggerType == null) {
+                        //从指令限制对象中进行读取
+                        triggerType = TriggerType.valueOf(commandLimit.getState());
+                        //没有读取到结果时，视为不设限
+                        if (triggerType == null) {
+                            triggerType = TriggerType.NONE;
+                        }
+                        commandExecTemp.setTrigger(triggerType);
+                        commandExecTemp.setTriggerEndTime(nowTime + (long) triggerType.getSecond() * 1000);
+                    }
+                    //当超过触发状态结束时间时，重置记录
+                    if (commandExecTemp.getTriggerEndTime() < nowTime) {
+                        clearCommandRecord(userId, groupId, primary);
+                        commandExecTemp = getCommandRecord(userId, groupId, primary);
+                    }
+                    return commandExecTemp;
+                }
+            }
+            //不在周期时间时，进行首次执行时间重置
+            else {
+                clearCommandRecord(userId, groupId, primary);
+            }
+        }
+        return commandExecTemp;
     }
 
 

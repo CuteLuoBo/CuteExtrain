@@ -70,59 +70,27 @@ public class CommandAdvice {
                         primary = command.getPrimaryName();
                         //获取执行指令的限制
                         CommandLimit commandLimit = CommandLimitRepository.getInstance().getCommandLimit(groupId, userId, primary);
-                        //存在限制时，判断执行记录，记录为管理员ID或具有插件管理权限
-                        boolean adminPermission = AuthUtils.isAdmin(commandSender.getPermitteeId());
-                        if (commandLimit != null || GlobalConfig.ADMIN_ID == userId || adminPermission) {
-                            CommandLimitUtils commandLimitUntil = CommandLimitUtils.getInstance();
-                            //TODO 增加对子命令限制的处理，储存格式：主命令.子命令
-                            //获取当前记录的执行记录
-                            CommandExecTemp commandExecTemp = commandLimitUntil.getCommandRecord(userId, groupId, primary);
-                            if (commandExecTemp != null) {
-                                //当在周期时间内
-                                if ((commandExecTemp.getFirstTime() - System.currentTimeMillis()) / MS_RATIO < commandLimit.getCycleSecond()) {
-                                    //指令执行次数达到限制时
-                                    if (commandExecTemp.getNumber() >= commandLimit.getCycleNum()) {
-                                        //获取触发效果类型
-                                        TriggerType triggerType = commandExecTemp.getTrigger();
-                                        //没有设置过触发效果时
-                                        if (triggerType == null) {
-                                            //获取指令默认触发的状态
-                                            Integer state = commandLimit.getState();
-                                            if (state == null) {
-                                                state = 0;
-                                            }
-                                            //TODO 可增加更多触发效果
-                                            switch (state) {
-                                                default:
-                                                    triggerType = TriggerType.IGNORE_TEN_MINUTE;
-                                                    commandExecTemp.setTrigger(triggerType);
-                                                    //设置触发效果结束时间
-                                                    commandExecTemp.setTriggerEndTime(System.currentTimeMillis() + (long) triggerType.getSecond() * MS_RATIO);
-                                                    break;
-                                            }
-                                            //发送提示信息
-                                            MessageChain chain = new MessageChainBuilder()
-                                                    .append(new At(userId))
-                                                    .append(triggerType.getDescription())
-                                                    .build();
-                                            commandSender.sendMessage(chain);
-                                            return false;
-                                        }
-                                        //当超过触发状态结束时间时，重置记录
-                                        if (commandExecTemp.getTriggerEndTime() < System.currentTimeMillis()) {
-                                            commandLimitUntil.clearCommandRecord(userId, groupId, primary);
-                                        }
-                                        //在触发状态内时，拒绝执行指令
-                                        else {
-                                            return false;
-                                        }
-                                    }
-                                    //超出时间时，进行首次执行时间重置
-                                }else {
-                                    commandLimitUntil.clearCommandRecord(userId, groupId, primary);
+                        boolean noAdminPermission = GlobalConfig.ADMIN_ID != userId || !AuthUtils.isAdmin(commandSender.getPermitteeId());
+                        //有指令限制同时非管理员时，执行
+                        if (commandLimit != null && noAdminPermission) {
+                            //验证指令
+                            CommandExecTemp commandExecTemp = CommandLimitUtils.getInstance().commandVerify(userId, groupId, primary, commandLimit);
+                            //触发结果不为NONE，同时达到限制条件时，拒绝指令执行
+                            if (commandExecTemp.getTrigger() != TriggerType.NONE && commandExecTemp.getNumber() >= commandLimit.getCycleNum()) {
+                                //第一次触发限制时，返回提示信息
+                                if (commandLimit.getCycleNum().equals(commandExecTemp.getNumber())) {
+                                    //发送提示信息
+                                    MessageChain chain = new MessageChainBuilder()
+                                            .append(new At(userId))
+                                            .append(commandExecTemp.getTrigger().getDescription())
+                                            .build();
+                                    commandSender.sendMessage(chain);
                                 }
+                                //增加指令执行次数
+                                CommandLimitUtils.getInstance().addCommandRecord(userId, groupId, primary);
+                                return false;
                             }
-                            //指令存在限制时，带记录执行
+                            //指令存在限制但未到限制条件时，正常执行
                             Object returnObject = point.proceed();
                             //获取指令返回结果，正确执行时记录
                             if (returnObject instanceof Boolean) {
@@ -141,5 +109,7 @@ public class CommandAdvice {
         //未进入拦截逻辑时，普通执行
         return point.proceed();
     }
+
+
 
 }

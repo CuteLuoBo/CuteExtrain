@@ -1,6 +1,7 @@
 package com.github.cuteluobo.model;
 
 /**
+ * 指令限制-数据库储存
  * @author CuteLuoBo
  */
 public class CommandLimit {

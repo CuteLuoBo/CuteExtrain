@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 权限缓存类
+ * 指令限制缓存类
  *
  * @author CuteLuoBo
  */
