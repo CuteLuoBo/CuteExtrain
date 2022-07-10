@@ -97,35 +97,43 @@ class CommandLimitUtilsTest {
      * 指令校验
      */
     @Test
-    void commandVerify() {
+    void commandVerify() throws InterruptedException {
         //初始化测试变量
         long userId = 1;
         long groupId = 10000;
+        int cycleSecond = 5;
         String command = "test";
         TriggerType triggerType = TriggerType.IGNORE_TEN_MINUTE;
 
-        //初始化一个600秒内只能执行2次的指令限制
+        //初始化指令限制
         CommandLimit commandLimit = new CommandLimit();
         commandLimit.setCycleNum(2);
-        commandLimit.setCycleSecond(600);
+        commandLimit.setCycleSecond(cycleSecond);
         commandLimit.setState(triggerType.getValue());
 
+        //执行一次
         CommandExecTemp commandExecTemp = commandLimitUtils.commandVerify(userId, groupId, command, commandLimit);
         //未添加执行记录时，不会有结果
         assertNull(commandExecTemp);
-        //执行一次
         commandLimitUtils.addCommandRecord(userId, groupId, command);
+
+        //执行第二次
         commandExecTemp = commandLimitUtils.commandVerify(userId, groupId, command, commandLimit);
         //有结果但不会触发条件
         assertNotNull(commandExecTemp);
         assertNull(commandExecTemp.getTrigger());
-
-        //执行第二次
         commandLimitUtils.addCommandRecord(userId, groupId, command);
-        //在第三次执行之前验证会超限
+
+        //尝试执行第三次
         commandExecTemp = commandLimitUtils.commandVerify(userId, groupId, command, commandLimit);
         //有结果并触发条件
         assertNotNull(commandExecTemp);
         assertEquals(commandExecTemp.getTrigger(), triggerType);
+
+        //等待超时时间后尝试
+        Thread.sleep(cycleSecond * 1000L);
+        commandExecTemp = commandLimitUtils.commandVerify(userId, groupId, command, commandLimit);
+        //不应该触发
+        assertNull(commandExecTemp);
     }
 }

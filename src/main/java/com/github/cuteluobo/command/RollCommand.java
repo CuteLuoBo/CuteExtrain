@@ -8,6 +8,7 @@ import com.github.cuteluobo.model.YysUnit;
 import com.github.cuteluobo.pojo.RollImgResult;
 import com.github.cuteluobo.pojo.RollResultData;
 import com.github.cuteluobo.pojo.RollUnit;
+import com.github.cuteluobo.repository.GlobalConfig;
 import com.github.cuteluobo.service.Impl.YysImgOutputServiceImpl;
 import com.github.cuteluobo.service.Impl.YysRollServiceImpl;
 import com.github.cuteluobo.util.FileIoUtils;
@@ -75,8 +76,12 @@ public class RollCommand extends CompositeCommand {
     @SubCommand({"normal","n","普通"})
     public Boolean normal(@NotNull CommandSender sender,Integer rollNum, String message) throws IOException {
         boolean up = message != null && message.toLowerCase().contains("up");
-        //设置最大单次500抽
-        rollNum = Math.min(rollNum, 500);
+        //绝对值
+        rollNum = Math.abs(rollNum);
+        //为零时初始化为10
+        if (rollNum == 0) {
+            rollNum = 10;
+        }
         MessageChainBuilder chainBuilder = new MessageChainBuilder();
         User user = sender.getUser();
         long userId = 0;
@@ -87,6 +92,11 @@ public class RollCommand extends CompositeCommand {
                 CommandSenderOnMessage senderOnMessage = (CommandSenderOnMessage) sender;
                 chainBuilder.append(new QuoteReply(senderOnMessage.getFromEvent().getSource()));
             }
+        }
+        //非管理员时设限
+        if (GlobalConfig.ADMIN_ID != userId) {
+            //设置最大单次500抽
+            rollNum = Math.min(rollNum, 500);
         }
         //TODO 增加时间统计
         String title = rollNum + "抽" + (up ? "UP" : "") + "模拟抽卡结果：\n";

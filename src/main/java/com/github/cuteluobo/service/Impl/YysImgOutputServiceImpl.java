@@ -415,16 +415,18 @@ public class YysImgOutputServiceImpl implements ImgOutputService {
 
             //生成绘制数据
 
+            if (maxUnit != null) {
+                //字体大小
+                int achievement1FontSize = 20;
+                Color achievement1Color = Color.BLACK;
+                String achievement1Title = "抽取最多式神： " + maxUnit.getLevel() + " " + maxUnit.getName() + " x " + totalNum + " 次";
+                //构建成就输出
+                TextDrawData achievement1 = new TextDrawData(achievement1Title, normalFont, achievement1FontSize, achievement1Color
+                        , achievementFontLeftSpace, achievementFontTopTitleSpace + achievementTitleFontSize);
 
-            //字体大小
-            int achievement1FontSize = 20;
-            Color achievement1Color = Color.BLACK;
-            String achievement1Title = "抽取最多式神： " + maxUnit.getLevel() + " " + maxUnit.getName() + " x " + totalNum + " 次";
-            //构建成就输出
-            TextDrawData achievement1 = new TextDrawData(achievement1Title, normalFont, achievement1FontSize, achievement1Color
-                    , achievementFontLeftSpace, achievementFontTopTitleSpace + achievementTitleFontSize);
+                achievementList.add(achievement1);
 
-            achievementList.add(achievement1);
+            }
             //TODO 增加更多输出
         }
         //标题文字数据

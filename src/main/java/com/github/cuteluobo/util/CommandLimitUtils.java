@@ -181,7 +181,7 @@ public class CommandLimitUtils {
         CommandExecTemp commandExecTemp = getCommandRecord(userId, groupId, primary);
         if (commandExecTemp != null) {
             //当在周期时间内
-            if ((commandExecTemp.getFirstTime() - nowTime) / 1000 < commandLimit.getCycleSecond()) {
+            if ((nowTime - commandExecTemp.getFirstTime() ) / 1000 < commandLimit.getCycleSecond()) {
                 //指令执行次数达到限制时
                 if (commandExecTemp.getNumber() >= commandLimit.getCycleNum()) {
                     //获取触发效果类型
@@ -205,9 +205,10 @@ public class CommandLimitUtils {
                     return commandExecTemp;
                 }
             }
-            //不在周期时间时，进行首次执行时间重置
+            //不在周期时间时，进行首次执行时间重置并返回最新结果
             else {
                 clearCommandRecord(userId, groupId, primary);
+                return getCommandRecord(userId, groupId, primary);
             }
         }
         return commandExecTemp;

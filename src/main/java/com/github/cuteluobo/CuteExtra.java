@@ -54,7 +54,7 @@ public final class CuteExtra extends JavaPlugin {
     public static final CuteExtra INSTANCE = new CuteExtra();
     public static final String PLUGIN_NAME = "cute-extra 模拟抽卡插件";
     public static final String PLUGIN_ID = "com.github.cuteluobo.cute-extra";
-    public static final String PLUGIN_VERSION = "0.4.3";
+    public static final String PLUGIN_VERSION = "0.4.4";
     public static final String DATABASE_FILE_NAME = "database.sqlite";
     /**
      * 基础权限
@@ -135,8 +135,7 @@ public final class CuteExtra extends JavaPlugin {
     private void permissionExecute() throws PermissionRegistryConflictException {
         basePermission = PermissionService.getInstance().register(new PermissionId(PLUGIN_ID,"base"),"插件默认权限", this.getParentPermission());
         adminPermission = PermissionService.getInstance().register(new PermissionId(PLUGIN_ID,"admin"),"插件管理员权限", this.getParentPermission());
-        //TODO 找到能在插件中赋予所有用户默认权限的方法
-//        PermissionService.getInstance().permit(?,basePermission);
+        //赋予所有用户默认权限
         PermissionService.permit(AbstractPermitteeId.AnyUser.INSTANCE, basePermission.getId());
     }
 
