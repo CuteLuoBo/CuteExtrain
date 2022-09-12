@@ -57,6 +57,9 @@ dependencies {
 //    implementation group: 'com.amihaiemil.web', name: 'eo-yaml', version: '6.0.1'
     // https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc
     implementation group: 'org.xerial', name: 'sqlite-jdbc', version: '3.36.0.3'
+
+    compile 'com.alibaba:fastjson:1.2.76'
+
     testImplementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
     testImplementation "net.mamoe:mirai-core:$miraiCoreVersion"
 //    testImplementation "net.mamoe:mirai-core-qqandroid:$miraiCoreVersion"

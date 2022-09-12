@@ -19,6 +19,9 @@ public class ResourceLoader {
 
     public static final ResourceLoader INSTANCE = new ResourceLoader();
 
+    public static final String YYS_UNIT_IMAGE_HEAD = File.separator+"yys"+File.separator+"head";
+    public static final String YYS_UNIT_IMAGE_BODY = File.separator+"yys"+File.separator+"body";
+
     private ResourceLoader() {
         //初始化
         try {

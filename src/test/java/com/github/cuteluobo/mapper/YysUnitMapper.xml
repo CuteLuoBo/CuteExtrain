@@ -19,7 +19,7 @@
     SELECT <include refid="Base_Column_List" /> FROM unit_yys WHERE can_roll = #{canRoll}
     </select>
 
-  <insert id="addOne" parameterType="com.github.cuteluobo.model.YysUnit" useGeneratedKeys="true" >
-    INSERT INTO unit_yys (unit_id,level,name,special_name,can_roll) VALUES (#{u.unitId},#{u.level},#{u.name},#{u.specialName},#{u.canRoll})
+  <insert id="addOne" parameterType="com.github.cuteluobo.model.YysUnit" useGeneratedKeys="true">
+    INSERT INTO unit_yys (unit_id,level,name,special_name,can_roll) VALUES (#{unitId},#{level},#{name},#{specialName},#{canRoll})
   </insert>
 </mapper>

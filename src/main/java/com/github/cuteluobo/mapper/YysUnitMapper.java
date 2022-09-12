@@ -1,9 +1,7 @@
 package com.github.cuteluobo.mapper;
 
 import com.github.cuteluobo.model.YysUnit;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.ResultMap;
-import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.*;
 
 import java.util.List;
 
@@ -13,13 +11,31 @@ import java.util.List;
 */
 @Mapper
 public interface YysUnitMapper {
+
+    /**
+     * 新增记录
+     *TODO 对于xml配置无法生效，只能用注解模式，待排查
+     * @param yysUnit 新记录数据
+     * @return 变更数量
+     */
+    @Insert("INSERT INTO unit_yys (unit_id,level,name,special_name,can_roll) VALUES (#{unitId},#{level},#{name},#{specialName},#{canRoll})")
+    @Options(useGeneratedKeys = true)
+    public int addOne(YysUnit yysUnit);
+
+
+    /**
+     * 查询所有可用式神列表
+     * @return 查询列表
+     */
+    @Select("SELECT * FROM unit_yys")
+    public List<YysUnit> selectList();
     /**
      * 查询式神列表
      * @param canRoll 筛选可抽取
      * @return 查询列表
      */
-    @Select("SELECT * FROM unit_yys WHERE can_roll = #{arg0}")
-    public List<YysUnit> selectList(Boolean canRoll);
+//    @Select("SELECT * FROM unit_yys WHERE can_roll = #{arg0}")
+    public List<YysUnit> selectListByCanRoll(Boolean canRoll);
 
     /**
      * 查询式神

@@ -31,7 +31,7 @@ public class YysRollServiceImpl implements ExpandRollService {
     private YysRollServiceImpl(){
        yysUnitMapper = ProxyHandlerFactory.getMapper(YysUnitMapper.class);
        //填充卡池式神数据
-        List<YysUnit> yysUnitList = yysUnitMapper.selectList(true);
+        List<YysUnit> yysUnitList = yysUnitMapper.selectListByCanRoll(true);
         if (yysUnitList != null) {
             for (YysUnit yysUnit :
                     yysUnitList) {
