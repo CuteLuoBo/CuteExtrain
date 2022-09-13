@@ -28,22 +28,32 @@ public class YysRollServiceImpl implements ExpandRollService {
     private YysUnitMapper yysUnitMapper;
     private Map<String, Map<Integer,RollUnit>> rollUnitMap = new HashMap<>();
 
-    private YysRollServiceImpl(){
-       yysUnitMapper = ProxyHandlerFactory.getMapper(YysUnitMapper.class);
-       //填充卡池式神数据
+    /**
+     * 重载式神信息
+     */
+    @Override
+    public void reloadData() {
+        //填充卡池式神数据
         List<YysUnit> yysUnitList = yysUnitMapper.selectListByCanRoll(true);
         if (yysUnitList != null) {
+            //清空原数据，重新加载
+            rollUnitMap.clear();
             for (YysUnit yysUnit :
                     yysUnitList) {
                 Map<Integer,RollUnit> levelRollUnitMap = rollUnitMap.get(yysUnit.getLevel());
                 //获取已有阶级式神列表，为null时进行初始化
                 if (levelRollUnitMap == null) {
-                    levelRollUnitMap = new HashMap<>();
+                    levelRollUnitMap = new HashMap<>(16);
                     rollUnitMap.put(yysUnit.getLevel(), levelRollUnitMap);
                 }
                 levelRollUnitMap.put(yysUnit.getUnitId(), new RollUnit(yysUnit));
             }
         }
+    }
+
+    private YysRollServiceImpl(){
+       yysUnitMapper = ProxyHandlerFactory.getMapper(YysUnitMapper.class);
+        reloadData();
     }
 
 
@@ -484,4 +494,6 @@ public class YysRollServiceImpl implements ExpandRollService {
     public RollResultData rollUp(@NotNull Integer rollNum, @NotNull Boolean up, Integer upNum, Float upRate) {
         return rollResult(rollNum, up, upNum, upRate, null);
     }
+
+
 }

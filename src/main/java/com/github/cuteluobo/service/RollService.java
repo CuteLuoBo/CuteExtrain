@@ -30,4 +30,9 @@ public interface RollService {
      */
     public RollResultData rollUp(@NotNull Integer rollNum, @NotNull Boolean up, Integer upNum, Float upRate);
 
+    /**
+     * 重载式神信息
+     */
+    public void reloadData();
+
 }

@@ -4,6 +4,7 @@ import com.github.cuteluobo.CuteExtra;
 import com.github.cuteluobo.model.YysUnit;
 import com.github.cuteluobo.repository.GlobalConfig;
 import com.github.cuteluobo.repository.InvitedEventRepository;
+import com.github.cuteluobo.service.Impl.YysRollServiceImpl;
 import com.github.cuteluobo.util.UnitsInfoUpdateUtils;
 import net.mamoe.mirai.console.command.CommandOwner;
 import net.mamoe.mirai.console.command.CommandSender;
@@ -92,6 +93,8 @@ public class YysUnitInfoCommand extends CompositeCommand {
                             messageChainBuilder.append(String.valueOf(u.getUnitId())).append("-").append(u.getLevel()).append(" ").append(u.getName()).append("\n");
                         });
                     }
+                    //重载抽卡数据库
+                    YysRollServiceImpl.INSTANCE.reloadData();
                     sender.sendMessage(messageChainBuilder.build());
                 } catch (Exception e) {
                     sender.sendMessage("式神资料更新失败，错误消息："+e.getLocalizedMessage()+"更多消息请查看服务器日志");
