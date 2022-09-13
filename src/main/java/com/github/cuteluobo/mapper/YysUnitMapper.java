@@ -33,7 +33,7 @@ public interface YysUnitMapper {
      * @param canRoll 筛选可抽取
      * @return 查询列表
      */
-//    @Select("SELECT * FROM unit_yys WHERE can_roll = #{arg0}")
+    @Select("SELECT * FROM unit_yys WHERE can_roll = #{arg0}")
     public List<YysUnit> selectListByCanRoll(Boolean canRoll);
 
     /**

@@ -1,6 +1,8 @@
 package com.github.cuteluobo.task;
 
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,6 +18,8 @@ import java.util.List;
  * @date 2022/9/9 16:33
  */
 public interface IDownloader {
+    Logger logger = LoggerFactory.getLogger(IDownloader.class);
+
     /**
      * 名称重复时的保存模式
      */
@@ -81,16 +85,26 @@ public interface IDownloader {
      * @param mode              文件重名时操作模式
      * @return 保存的文件列表
      */
-    default List<File> downloadFileList(@NotNull List<URL> urlList, List<String> saveFileNameList, Path savePath,DuplicationSaveMode mode) throws IOException {
+    default List<File> downloadFileList(@NotNull List<URL> urlList, List<String> saveFileNameList, Path savePath,DuplicationSaveMode mode){
         List<File> fileList = new ArrayList<>(urlList.size());
         if (saveFileNameList == null || saveFileNameList.size() == 0) {
             for (int i = 0; i < urlList.size(); i++) {
-                fileList.add(downloadFile(urlList.get(i),null,savePath,mode));
+                try {
+                    fileList.add(downloadFile(urlList.get(i),null,savePath,mode));
+                } catch (IOException ioException) {
+                    logger.debug("下载文件时出现错误，url:{}", urlList.get(i), ioException);
+                }
+
             }
         } else if (urlList.size() == saveFileNameList.size()) {
             for (int i = 0; i < urlList.size(); i++) {
                 String saveName = saveFileNameList.get(i);
-                fileList.add(downloadFile(urlList.get(i),saveName,savePath,mode));
+                try {
+                    fileList.add(downloadFile(urlList.get(i),saveName,savePath,mode));
+                } catch (IOException ioException) {
+                    logger.debug("下载文件时出现错误，url:{}", urlList.get(i), ioException);
+                }
+
             }
         } else {
             for (int i = 0; i < urlList.size(); i++) {
@@ -98,7 +112,11 @@ public interface IDownloader {
                 if (i < saveFileNameList.size()) {
                     saveName = saveFileNameList.get(i);
                 }
-                fileList.add(downloadFile(urlList.get(i),saveName,savePath,mode));
+                try {
+                    fileList.add(downloadFile(urlList.get(i), saveName, savePath, mode));
+                } catch (IOException ioException) {
+                    logger.debug("下载文件时出现错误，url:{}", urlList.get(i), ioException);
+                }
             }
         }
         return fileList;

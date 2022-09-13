@@ -4,6 +4,7 @@ import cn.pomit.mybatis.ProxyHandlerFactory;
 import cn.pomit.mybatis.configuration.MybatisConfiguration;
 import com.github.cuteluobo.command.InvitedCommand;
 import com.github.cuteluobo.command.RollCommand;
+import com.github.cuteluobo.command.YysUnitInfoCommand;
 import com.github.cuteluobo.enums.DatabaseTable;
 import com.github.cuteluobo.mapper.CommandLimitMapper;
 import com.github.cuteluobo.mapper.SystemMapper;
@@ -142,6 +143,7 @@ public final class CuteExtra extends JavaPlugin {
     private void commandReg() throws PermissionRegistryConflictException {
         CommandManager.INSTANCE.registerCommand(new RollCommand(), false);
         CommandManager.INSTANCE.registerCommand(new InvitedCommand(), false);
+        CommandManager.INSTANCE.registerCommand(new YysUnitInfoCommand(), false);
     }
 
     private void initDatasource() throws SQLException, IOException {

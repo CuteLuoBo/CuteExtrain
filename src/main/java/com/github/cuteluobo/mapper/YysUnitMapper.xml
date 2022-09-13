@@ -15,11 +15,11 @@
     <!--@mbg.generated-->
     id, unit_id, "level", "name", special_name, can_roll
   </sql>
-  <select id="selectListByCanRoll" resultMap="BaseResultMap">
-    SELECT <include refid="Base_Column_List" /> FROM unit_yys WHERE can_roll = #{canRoll}
-    </select>
+<!--  <select id="selectListByCanRoll" resultMap="BaseResultMap">-->
+<!--    SELECT <include refid="Base_Column_List" /> FROM unit_yys WHERE can_roll = #{canRoll}-->
+<!--    </select>-->
 
-  <insert id="addOne" parameterType="com.github.cuteluobo.model.YysUnit" useGeneratedKeys="true" keyColumn="id" >
-    INSERT INTO unit_yys (unit_id,level,name,special_name,can_roll) VALUES (#{unitId},#{level},#{name},#{specialName},#{canRoll})
-  </insert>
+<!--  <insert id="addOne" parameterType="com.github.cuteluobo.model.YysUnit" useGeneratedKeys="true" keyColumn="id" >-->
+<!--    INSERT INTO unit_yys (unit_id,level,name,special_name,can_roll) VALUES (#{unitId},#{level},#{name},#{specialName},#{canRoll})-->
+<!--  </insert>-->
 </mapper>
