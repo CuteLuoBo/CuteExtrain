@@ -73,6 +73,10 @@ public class BaseDownloader implements IDownloader {
             return file;
         }
         if (!file.exists()) {
+            File parentFile = file.getParentFile();
+            if (parentFile != null && !parentFile.exists()) {
+                parentFile.mkdirs();
+            }
             file.createNewFile();
         }
         //下载文件
@@ -84,7 +88,6 @@ public class BaseDownloader implements IDownloader {
         ) {
             fileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
         }
-        file.deleteOnExit();
         return checkFile;
     }
 
@@ -97,20 +100,6 @@ public class BaseDownloader implements IDownloader {
     @Override
     public File downloadFileToTemp(URL url) throws IOException {
         return downloadFile(url,null,TEMP_PATH);
-    }
-
-    /**
-     * 批量下载URL文件到指定目录
-     * TODO 待完成
-     * @param urlList          文件URL列表
-     * @param saveFileNameList 保存名称列表，与URL列表对应，为null时，使用url的源文件名称与后缀保存
-     * @param savePath         文件保存路径
-     * @param mode             文件重名时操作模式
-     * @return 保存的文件列表
-     */
-    @Override
-    public List<File> downloadFileList(List<URL> urlList, List<String> saveFileNameList, Path savePath, DuplicationSaveMode mode) {
-        return null;
     }
 
     private String checkFileName(URL url, String fileSaveName) {

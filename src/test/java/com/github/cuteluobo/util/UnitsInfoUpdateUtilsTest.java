@@ -16,6 +16,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Callable;
@@ -48,6 +49,7 @@ class UnitsInfoUpdateUtilsTest {
                 configuration.addMapper(c);
             }
         }
+        System.out.println(configuration);
     }
 
     @Test
@@ -57,15 +59,17 @@ class UnitsInfoUpdateUtilsTest {
         int size = newUnitList.size();
         System.out.println("本次更新式神数量: "+size);
         if (size <= 10) {
-            for (int i = 0; i < size; i++) {
-                YysUnit unit = newUnitList.get(i);
-                System.out.println(unit.getUnitId() + "-" + unit.getName());
-            }
+            newUnitList.forEach(u -> System.out.println(u.getUnitId() + "-" + u.getName()));
         }
     }
 
     @Test
-    void updateUnitImageTask() {
-        //TODO 完成下载测试
+    void updateUnitImageTask() throws Exception {
+        List<Integer> testUnitIdList = Arrays.asList(387, 386);
+        Callable<List<Integer>> task = UnitsInfoUpdateUtils.updateUnitImageTask(testUnitIdList);
+        List<Integer> rightList = task.call();
+        int size = rightList.size();
+        System.out.println("本次更新式神数量: "+size);
+        rightList.forEach(System.out::println);
     }
 }

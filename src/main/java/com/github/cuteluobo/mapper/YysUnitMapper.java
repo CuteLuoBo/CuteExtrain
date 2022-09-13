@@ -19,9 +19,8 @@ public interface YysUnitMapper {
      * @return 变更数量
      */
     @Insert("INSERT INTO unit_yys (unit_id,level,name,special_name,can_roll) VALUES (#{unitId},#{level},#{name},#{specialName},#{canRoll})")
-    @Options(useGeneratedKeys = true)
+    @Options(useGeneratedKeys = true,keyColumn = "id")
     public int addOne(YysUnit yysUnit);
-
 
     /**
      * 查询所有可用式神列表

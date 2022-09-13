@@ -1,6 +1,10 @@
 package com.github.cuteluobo.model;
 
 
+import org.jetbrains.annotations.PropertyKey;
+
+import javax.management.DescriptorKey;
+
 /**
 *@author CuteLuoBo
 *@date 2021-04-08

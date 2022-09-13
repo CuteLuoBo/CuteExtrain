@@ -31,9 +31,10 @@ public class ResourceLoader {
             FileIoUtils.deleteFolderFile(normalTempFolder,false);
             logger.warn("提示：插件资源路径中的temp文件夹在启动时会自动清空，请勿在此目录内存放其他文件");
         } catch (Throwable throwable) {
-            normalResourceFolder = new File(String.valueOf(this.getClass().getResource("imgResource")));
-            normalTempFolder = new File(String.valueOf(this.getClass().getResource("temp")));
-            logger.error("使用插件的数据路径错误，切换为外置路径:{}",normalResourceFolder.getAbsolutePath(),throwable);
+            normalResourceFolder = new File("external/imgResource");
+            normalTempFolder = new File("external/temp");
+            logger.warn("使用插件的数据路径错误，切换为外置路径:{}",normalResourceFolder.getAbsolutePath());
+            logger.debug("StackTrace:",throwable);
         }
         //创建文件夹
         if (!normalResourceFolder.exists()) {

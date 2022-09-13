@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -68,7 +69,7 @@ public interface IDownloader {
      * @param savePath          文件保存路径
      * @return 保存的文件列表
      */
-    default List<File> downloadFileList(List<URL> urlList, List<String> saveFileNameList, Path savePath) {
+    default List<File> downloadFileList(@NotNull List<URL> urlList, List<String> saveFileNameList, Path savePath) throws IOException {
         return downloadFileList(urlList, saveFileNameList, savePath, DuplicationSaveMode.REPLACE);
     }
 
@@ -80,5 +81,26 @@ public interface IDownloader {
      * @param mode              文件重名时操作模式
      * @return 保存的文件列表
      */
-    public List<File> downloadFileList(List<URL> urlList, List<String> saveFileNameList, Path savePath,DuplicationSaveMode mode);
+    default List<File> downloadFileList(@NotNull List<URL> urlList, List<String> saveFileNameList, Path savePath,DuplicationSaveMode mode) throws IOException {
+        List<File> fileList = new ArrayList<>(urlList.size());
+        if (saveFileNameList == null || saveFileNameList.size() == 0) {
+            for (int i = 0; i < urlList.size(); i++) {
+                fileList.add(downloadFile(urlList.get(i),null,savePath,mode));
+            }
+        } else if (urlList.size() == saveFileNameList.size()) {
+            for (int i = 0; i < urlList.size(); i++) {
+                String saveName = saveFileNameList.get(i);
+                fileList.add(downloadFile(urlList.get(i),saveName,savePath,mode));
+            }
+        } else {
+            for (int i = 0; i < urlList.size(); i++) {
+                String saveName = null;
+                if (i < saveFileNameList.size()) {
+                    saveName = saveFileNameList.get(i);
+                }
+                fileList.add(downloadFile(urlList.get(i),saveName,savePath,mode));
+            }
+        }
+        return fileList;
+    }
 }
