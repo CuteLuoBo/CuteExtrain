@@ -4,6 +4,7 @@ import com.github.cuteluobo.CuteExtra;
 import com.github.cuteluobo.model.YysUnit;
 import com.github.cuteluobo.repository.GlobalConfig;
 import com.github.cuteluobo.repository.InvitedEventRepository;
+import com.github.cuteluobo.service.Impl.YysInfoUpdateServiceImpl;
 import com.github.cuteluobo.service.Impl.YysRollServiceImpl;
 import com.github.cuteluobo.util.UnitsInfoUpdateUtils;
 import net.mamoe.mirai.console.command.CommandOwner;
@@ -60,7 +61,8 @@ public class YysUnitInfoCommand extends CompositeCommand {
             threadPoolExecutor.submit(() -> {
                 MessageChainBuilder messageChainBuilder = new MessageChainBuilder();
                 //尝试更新式神信息
-                Callable<List<YysUnit>> task = UnitsInfoUpdateUtils.appendUnitsListTask();
+//                Callable<List<YysUnit>> task = UnitsInfoUpdateUtils.appendUnitsListTask();
+                Callable<List<YysUnit>> task = YysInfoUpdateServiceImpl.getInstance().updateAllUnitInfoTask();
                 try {
                     List<YysUnit> newUnitList = task.call();
                     long downloadInfoEndTime = System.currentTimeMillis();

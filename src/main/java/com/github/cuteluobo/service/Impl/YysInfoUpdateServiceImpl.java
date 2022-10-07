@@ -104,7 +104,8 @@ public class YysInfoUpdateServiceImpl implements InfoUpdateService, InfoUpdateTa
      */
     @Override
     public void updateAllUnitInfo() {
-
+        Callable<List<YysUnit>> task = updateAllUnitInfoTask();
+        pools.submit(task);
     }
 
     /**
@@ -186,7 +187,8 @@ public class YysInfoUpdateServiceImpl implements InfoUpdateService, InfoUpdateTa
     }
 
     /**
-     * 更新指定单位信息，返回创建的 task
+     *
+     * TODO 更新指定单位信息，返回创建的 task
      *
      * @param unitIdList 指定更新单位ID列表
      * @return 本次更新单位信息列表
