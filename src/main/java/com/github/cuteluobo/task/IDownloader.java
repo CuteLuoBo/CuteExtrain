@@ -67,6 +67,15 @@ public interface IDownloader {
     public File downloadFileToTemp(URL url) throws IOException;
 
     /**
+     * 将下载文件保存到缓存目录中进行临时储存
+     * @param url 文件URL
+     * @param fileSaveName 保存的文件名
+     * @return 保存的文件路径
+     * @throws IOException
+     */
+    public File downloadFileToTemp(URL url,String fileSaveName) throws IOException;
+
+    /**
      * 批量下载URL文件到指定目录 (重名默认直接替换)
      * @param urlList           文件URL列表
      * @param saveFileNameList  保存名称列表，与URL列表对应，为null时，使用url的源文件名称与后缀保存

@@ -9,7 +9,9 @@ import java.math.BigDecimal;
 public enum YysRoll {
     /**设置各抽卡概率，见官方:https://yys.163.com/news/notice/2017/05/01/25369_665793.html*/
     N("N",0f,"0"),R("R",0.7875f,"0.7875")
-    ,SR("SR",0.2f,"0.2"),SSR("SSR",0.01F,"0.01"),SP("SP",0.0025F,"0.0025");
+    ,SR("SR",0.2f,"0.2"),SSR("SSR",0.01F,"0.01")
+    ,SP("SP",0.0025F,"0.0025")
+    ;
     /**
      * 等级名称
      */

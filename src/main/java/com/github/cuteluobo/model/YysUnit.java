@@ -4,6 +4,7 @@ package com.github.cuteluobo.model;
 import org.jetbrains.annotations.PropertyKey;
 
 import javax.management.DescriptorKey;
+import java.util.Objects;
 
 /**
 *@author CuteLuoBo
@@ -116,6 +117,39 @@ public class YysUnit {
      */
     public void setCanRoll(Boolean canRoll) {
         this.canRoll = canRoll;
+    }
+
+    /**
+     * 比较基本信息（排除ID）
+     * @param o 用于对比的对象
+     * @return 对比结果
+     */
+    public boolean equalsBaseInfo(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof YysUnit)) {
+            return false;
+        }
+        YysUnit unit = (YysUnit) o;
+        return getUnitId().equals(unit.getUnitId()) && getLevel().equals(unit.getLevel()) && getName().equals(unit.getName()) && Objects.equals(getSpecialName(), unit.getSpecialName()) && getCanRoll().equals(unit.getCanRoll());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof YysUnit)) {
+            return false;
+        }
+        YysUnit unit = (YysUnit) o;
+        return Objects.equals(getId(), unit.getId()) && getUnitId().equals(unit.getUnitId()) && getLevel().equals(unit.getLevel()) && getName().equals(unit.getName()) && Objects.equals(getSpecialName(), unit.getSpecialName()) && getCanRoll().equals(unit.getCanRoll());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId(), getUnitId(), getLevel(), getName(), getSpecialName(), getCanRoll());
     }
 
     @Override

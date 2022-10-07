@@ -35,6 +35,12 @@ public class UnitsInfoUpdateUtils {
     //式神书签类半身：https://yys.res.netease.com/pc/zt/20161108171335/data/mark_btn/{id}.png
 
     /**
+     * interactive是否能抽取到,1=能抽，2=不能直接抽取(联动式神)
+     * rarity=稀有度，1=N,2=R,3=SR,4=SSR,5=SP
+     * */
+    //式神列表：https://g37simulator.webapp.163.com/get_heroid_list?rarity={}&interactive={}&material_type=0&page=1&per_page=500
+
+    /**
      * 式神头像图片URL前缀
      */
     public static final String UNIT_HEAD_IMAGE_URL_PREFIX = "https://yys.res.netease.com/pc/zt/20161108171335/data/shishen/";

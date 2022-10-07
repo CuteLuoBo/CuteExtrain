@@ -22,6 +22,14 @@ public interface YysUnitMapper {
     @Options(useGeneratedKeys = true,keyColumn = "id")
     public int addOne(YysUnit yysUnit);
 
+    @Insert({"<script>",
+            "INSERT INTO unit_yys (unit_id,level,name,special_name,can_roll) VALUES ",
+            "<foreach item='item' collection='list' separator=','>",
+            "(#{item.unitId},#{item.level},#{item.name},#{item.specialName},#{item.canRoll})",
+            "</foreach>",
+            "</script>"})
+    int addAll(List<YysUnit> list);
+
     /**
      * 查询所有可用式神列表
      * @return 查询列表

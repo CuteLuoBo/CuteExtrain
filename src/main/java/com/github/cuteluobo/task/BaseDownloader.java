@@ -102,6 +102,19 @@ public class BaseDownloader implements IDownloader {
         return downloadFile(url,null,TEMP_PATH);
     }
 
+    /**
+     * 将下载文件保存到缓存目录中进行临时储存
+     *
+     * @param url          文件URL
+     * @param fileSaveName 保存的文件名
+     * @return 保存的文件路径
+     * @throws IOException
+     */
+    @Override
+    public File downloadFileToTemp(URL url, String fileSaveName) throws IOException {
+        return downloadFile(url,fileSaveName,TEMP_PATH);
+    }
+
     private String checkFileName(URL url, String fileSaveName) {
         if (fileSaveName == null || fileSaveName.trim().length() == 0) {
             String urlString = url.toString();
