@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 
 /**
  * 全局配置
@@ -35,6 +36,29 @@ public class GlobalConfig {
 
 
     private GlobalConfig(){
+        loadNovelaiToken();
+    }
+
+    /**
+     * 保存NovelaiToken到文件
+     * @param token token
+     * @throws IOException 保存文件时错误
+     */
+    public boolean saveNovelaiTokenFile(String token) throws IOException {
+        if (token == null || token.trim().length() == 0) {
+            return false;
+        }
+        //更新缓存值
+        novelaiToken = token.trim();
+        //进行文件操作
+        File novelaiTokenFile = checkNovelaiTokenFile();
+        //删除并重写
+        novelaiTokenFile.delete();
+        Files.writeString(novelaiTokenFile.toPath(), novelaiToken, StandardOpenOption.CREATE);
+        return true;
+    }
+
+    private File checkNovelaiTokenFile() {
         File novelaiTokenFile = new File(ResourceLoader.INSTANCE.getDataFolder().getAbsolutePath() + File.separator + NOVELAI_TOKEN_FILE_NAME);
         if (!novelaiTokenFile.exists()) {
             try {
@@ -43,6 +67,11 @@ public class GlobalConfig {
                 logger.error("创建文件失败，路径:{}", novelaiTokenFile.getAbsolutePath(), ioException);
             }
         }
+        return novelaiTokenFile;
+    }
+
+    private void loadNovelaiToken() {
+        File novelaiTokenFile = checkNovelaiTokenFile();
         if (novelaiTokenFile.exists()) {
             try {
                 String readString = Files.readString(novelaiTokenFile.toPath()).trim();

@@ -4,17 +4,28 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.cuteluobo.pojo.NovelaiGenerateArgs;
 import com.github.cuteluobo.repository.GlobalConfig;
+import com.sun.net.httpserver.HttpContext;
 import io.ktor.http.HttpStatusCode;
+import io.ktor.network.sockets.ConnectTimeoutException;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.security.NoSuchAlgorithmException;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 /**
@@ -23,6 +34,10 @@ import java.util.stream.Collectors;
  * @date 2022/10/7 23:17
  */
 public class AiImgUtils {
+    private static ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(1, 10, 30, TimeUnit.SECONDS
+            , new SynchronousQueue<Runnable>(true)
+            , Executors.defaultThreadFactory());
+    private static HttpClient httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).executor(threadPoolExecutor).build();
     static class PostData{
         String input;
         String model;
@@ -58,9 +73,10 @@ public class AiImgUtils {
             this.parameters = parameters;
         }
     }
-    public static byte[] getImg(String text, String model, Boolean noH) throws URISyntaxException, IOException, InterruptedException {
-        HttpClient httpClient = HttpClient.newBuilder().build();
-        PostData postData = new PostData(TranslateUtils.autoToEN(tagsSplice(text)), model, new NovelaiGenerateArgs());
+    public static byte[] getImg(String text, boolean safe) throws URISyntaxException, IOException, InterruptedException, NoSuchAlgorithmException {
+//        HttpClient httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+//        PostData postData = new PostData(tagsSplice(text), safe?"safe-diffusion":"nai-diffusion", new NovelaiGenerateArgs());
+        PostData postData = new PostData(TranslateUtils.autoToEN(tagsSplice(text)), safe?"safe-diffusion":"nai-diffusion", new NovelaiGenerateArgs());
         String json = JSON.toJSONString(postData);
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(new URI("https://api.novelai.net/ai/generate-image"))
@@ -78,8 +94,6 @@ public class AiImgUtils {
         }
         return new byte[0];
     }
-
-    //TODO 完成机器人指令和图片上传
 
 
     private static String tagsSplice(String text) {

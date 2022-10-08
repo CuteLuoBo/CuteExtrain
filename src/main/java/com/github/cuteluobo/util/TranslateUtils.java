@@ -18,7 +18,12 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.Duration;
 import java.util.Arrays;
+import java.util.concurrent.Executors;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -29,9 +34,12 @@ import java.util.stream.Collectors;
  */
 public class TranslateUtils {
     static Logger logger = LoggerFactory.getLogger(TranslateUtils.class);
-
+    private static ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(1, 10, 30, TimeUnit.SECONDS
+            , new SynchronousQueue<Runnable>(true)
+            , Executors.defaultThreadFactory());
+    private static HttpClient httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).executor(threadPoolExecutor).build();
     public static String autoToEN(String text) throws URISyntaxException, IOException, InterruptedException {
-        HttpClient httpClient = HttpClient.newBuilder().build();
+//        HttpClient httpClient = HttpClient.newBuilder().build();
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(new URI("https://fanyi.youdao.com/translate?&doctype=json&type=AUTO&i="+text))
                 .GET()
