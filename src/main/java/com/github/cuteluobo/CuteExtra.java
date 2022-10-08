@@ -132,6 +132,12 @@ public final class CuteExtra extends JavaPlugin {
         });
     }
 
+    /**
+     * 加载配置
+     */
+    private void loadConfig() {
+    }
+
     /**初始化权限*/
     private void permissionExecute() throws PermissionRegistryConflictException {
         basePermission = PermissionService.getInstance().register(new PermissionId(PLUGIN_ID,"base"),"插件默认权限", this.getParentPermission());
