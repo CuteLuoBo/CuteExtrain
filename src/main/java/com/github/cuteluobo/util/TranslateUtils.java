@@ -3,6 +3,7 @@ package com.github.cuteluobo.util;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.github.cuteluobo.excepiton.ServiceException;
 import com.github.cuteluobo.pojo.NovelaiGenerateArgs;
 import com.github.cuteluobo.pojo.YouDaoTranslateArgs;
 import com.github.cuteluobo.repository.GlobalConfig;
@@ -38,8 +39,18 @@ public class TranslateUtils {
             , new SynchronousQueue<Runnable>(true)
             , Executors.defaultThreadFactory());
     private static HttpClient httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).executor(threadPoolExecutor).build();
-    public static String autoToEN(String text) throws URISyntaxException, IOException, InterruptedException {
-//        HttpClient httpClient = HttpClient.newBuilder().build();
+
+    /**
+     * 自动语言翻译到英文
+     * 使用有道网页API
+     * @param text 待翻译文本
+     * @return 翻译后文本，如失败将返回原文本
+     * @throws URISyntaxException 创建URI错误
+     * @throws IOException 网络IO通信错误
+     * @throws InterruptedException http请求时线程错误
+     * @throws ServiceException http状态码错误
+     */
+    public static String autoToEn(String text) throws URISyntaxException, IOException, InterruptedException, ServiceException {
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(new URI("https://fanyi.youdao.com/translate?&doctype=json&type=AUTO&i="+text))
                 .GET()
@@ -62,7 +73,7 @@ public class TranslateUtils {
                 return resultObject.getString("tgt");
             }
         }
-        return null;
+        throw new ServiceException("翻译API-Http通信错误:" + response.statusCode());
     }
 
 //    public static String autoToEN(String text) throws URISyntaxException, IOException, InterruptedException {

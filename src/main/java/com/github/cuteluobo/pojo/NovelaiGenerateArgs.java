@@ -1,5 +1,7 @@
 package com.github.cuteluobo.pojo;
 
+import java.util.Random;
+
 /**
  * AI生成参数
  * @author CuteLuoBo
@@ -11,12 +13,16 @@ public class NovelaiGenerateArgs {
     private int n_samples = 1;
     private double noise = 0.2;
     private String sampler = "k_euler_ancestral";
-    private int scale = 12;
-    private int seed = 0;
-    private int steps = 30;
+    private int scale = 11;
+    private int seed = (int) (System.currentTimeMillis() / 1000);
+    private int steps = 33;
     private double strength = 0.7;
     private String uc = "lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry";
     private int ucPreset = 0;
+    /**
+     * img2img时使用，传输数据为图片的BASE64编码。不带前缀
+     */
+    private String image;
 
     public int getHeight() {
         return height;
@@ -104,5 +110,13 @@ public class NovelaiGenerateArgs {
 
     public void setUcPreset(int ucPreset) {
         this.ucPreset = ucPreset;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
     }
 }

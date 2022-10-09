@@ -16,7 +16,7 @@ class AiImgUtilsTest {
 
     @Test
     void getImg() throws URISyntaxException, IOException, InterruptedException, NoSuchAlgorithmException {
-        byte[] bytes = AiImgUtils.getImg("cat", true);
+        byte[] bytes = AiImgUtils.getImg("miku,lolita,flat_chest", true);
         File file = FileIoUtils.createFileTemp("AiImgUtilsTest", "test.png");
         Files.write(file.toPath(), bytes, StandardOpenOption.CREATE);
         System.out.println(file.getAbsolutePath());
