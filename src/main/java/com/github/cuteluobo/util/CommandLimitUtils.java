@@ -5,9 +5,8 @@ import com.github.cuteluobo.model.CommandLimit;
 import com.github.cuteluobo.pojo.CommandExecTemp;
 import com.github.cuteluobo.pojo.UserCommandRecord;
 import com.github.cuteluobo.repository.CommandLimitRepository;
-import net.mamoe.mirai.message.data.At;
-import net.mamoe.mirai.message.data.MessageChain;
-import net.mamoe.mirai.message.data.MessageChainBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,6 +17,7 @@ import java.util.Map;
  * @date 2021-04-15
  */
 public class CommandLimitUtils {
+    private static Logger logger = LoggerFactory.getLogger(CommandLimitUtils.class);
     private static CommandLimitUtils INSTANCE ;
 
     private Map<Long, UserCommandRecord> recordMap;
@@ -47,6 +47,7 @@ public class CommandLimitUtils {
      */
     public CommandExecTemp getCommandRecord(Long userId, Long groupId, String commandString) {
         UserCommandRecord userCommandRecord = recordMap.get(userId);
+        //没有执行记录时，创建一个新的记录对象
         if (userCommandRecord == null) {
             userCommandRecord = new UserCommandRecord(userId);
             recordMap.put(userId, userCommandRecord);
@@ -162,15 +163,15 @@ public class CommandLimitUtils {
     }
 
     /**
-     * 对传入指令进行验证，并根据结果处理记录并返回触发结果
-     * 用于命令执行前判断拦截，已执行次数到达限制条件时就会返回触发条件
+     * 指令当前周期内尝试执行，返回执行后将触发的效果
+     * 同时在进入新周期时进行执行次数初始化
      * @param userId        用户ID
      * @param groupId       群ID
      * @param primary       指令前缀
-     * @param commandLimit  指令限制对象
-     * @return 触发结果，为null时说明不设限
+     * @return 返回执行后将触发的效果，为null时说明不设限
      */
-    public CommandExecTemp commandVerify(Long userId, Long groupId, String primary, CommandLimit commandLimit) {
+    public CommandExecTemp commandTryExec(Long userId, Long groupId, String primary) {
+        CommandLimit commandLimit = CommandLimitRepository.getInstance().getCommandLimit(groupId, userId, primary);
         //无指令限制时，直接返回null
         if (commandLimit == null) {
             return null;
@@ -211,7 +212,47 @@ public class CommandLimitUtils {
                 return getCommandRecord(userId, groupId, primary);
             }
         }
+
         return commandExecTemp;
+    }
+
+    /**
+     * 指令执行拦截结果
+     * 对于拒绝执行，将自动累计一次执行次数，避免重复状态0
+     * @param userId 用户ID
+     * @param groupId 群ID
+     * @param primary 执行指令
+     * @return -1=拒绝执行，0=第一次到达周期限制，1=允许执行
+     */
+    public int commandExecInterceptResult(Long userId, Long groupId, String primary) {
+
+        CommandLimit commandLimit = CommandLimitRepository.getInstance().getCommandLimit(groupId,userId, primary);
+        logger.debug("commandLimit:{}", commandLimit);
+        //有指令限制时，执行验证
+        if (commandLimit != null) {
+            logger.debug("enterCommandLimitCheck,userId:{},groupId:{},primary:{}", userId, groupId, primary);
+            //验证指令
+            CommandExecTemp commandExecTemp = commandTryExec(userId, groupId, primary);
+            logger.debug("commandExecTemp:{}", commandExecTemp);
+            //触发结果不为NONE，同时达到限制条件时，增加执行次数，拒绝指令执行
+            if (commandExecTemp != null && !TriggerType.NONE.equals(commandExecTemp.getTrigger()) && commandExecTemp.getNumber() >= commandLimit.getCycleNum()) {
+                //增加执行次数，避免重复状态0
+                addCommandRecord(userId, groupId, primary);
+                //第一次触发限制时，返回提示信息
+                if (commandLimit.getCycleNum().equals(commandExecTemp.getNumber()-1)) {
+                    return 0;
+                }
+                logger.debug("rejectCommand:{}-ByCommandLimit", primary);
+                return -1;
+            }
+            logger.debug("allowCommand:{}-hasLimited", primary);
+            //指令存在限制但未到限制条件时，正常执行
+            return 1;
+        }
+        //普通执行
+        logger.debug("allowCommand:{}", primary);
+        logger.debug("noLimitAllow,userId:{},groupId:{},primary:{}", userId, groupId, primary);
+        return 1;
     }
 
 

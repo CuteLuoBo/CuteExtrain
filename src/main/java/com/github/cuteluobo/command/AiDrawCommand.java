@@ -23,7 +23,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.Objects;
@@ -131,12 +134,12 @@ public class AiDrawCommand extends CompositeCommand {
         }
         //消息主体
         chainBuilder.append("===AI绘图===").append("\n")
-                .append("传入指定tags生成相关图片，描述越详细越精细，但禁止涩涩").append("\n")
-                .append("可用前缀/aidraw 或 /ad").append("\n")
-                .append("参数A：normal(n) -> 普通/直接提交tags不进行转换（建议）").append("\n")
-                .append("参数B：translate(tr) -> 翻译/转为英文后提交，有机翻词不达意问题").append("\n")
-                .append("提示，对于英文tags带空格的，需要使用’_‘(下划线)连接，否则会自动分割").append("\n")
-                .append("示例：/ad n miku,lolita,flat_chest");
+                .append("- 传入指定tags生成相关图片，描述越详细越精细，但禁止涩涩").append("\n")
+                .append("- 可用前缀/aidraw 或 /ad").append("\n")
+                .append("- 参数A：normal(n) -> 普通/直接提交tags不进行转换（建议）").append("\n")
+                .append("- 参数B：translate(tr) -> 翻译/转为英文后提交，有机翻词不达意问题").append("\n")
+                .append("- 注意！对于英文tags带空格的，需要使用’_‘(下划线)连接，否则会自动分割").append("\n")
+                .append("- 示例：/ad n miku,lolita,flat_chest");
         sender.sendMessage(chainBuilder.build());
         return true;
     }
@@ -210,7 +213,7 @@ public class AiDrawCommand extends CompositeCommand {
                     }
                 }
                 //从API中获取图片信息
-                byte[] bytes = AiImgUtils.getImg(finalTags, safe);
+                byte[] bytes = AiImgUtils.getImg("masterpiece, best quality,"+finalTags, safe);
                 long getImgEndTime = System.currentTimeMillis();
                 if (bytes.length == 0) {
                     chainBuilder.append("无图片数据，可能结果：token失效/tags错误");
@@ -218,8 +221,17 @@ public class AiDrawCommand extends CompositeCommand {
                     return;
                 }
                 //保存到本地
-                File file = FileIoUtils.createFileTemp(safe?"safe":"noSafe", finalTags.replace(File.separatorChar, '-')+".png");
-                Files.write(file.toPath(), bytes, StandardOpenOption.CREATE);
+                File file;
+                try {
+                    file = FileIoUtils.createFileTemp(safe?"safe":"noSafe", finalTags.replace(File.separatorChar, '-')+".png");
+                    Files.write(file.toPath(), bytes, StandardOpenOption.CREATE);
+                }
+                //文件名过长时，会导致错误
+                catch (FileNotFoundException fileNotFoundException) {
+                    file = FileIoUtils.createFileTemp(safe?"safe":"noSafe", "too_long_ignore"+".png");
+                    Files.write(file.toPath(), bytes, StandardOpenOption.CREATE);
+                }
+
                 long imgSaveTime = System.currentTimeMillis();
                 //使用mirai接口上传
                 Image image = Contact.uploadImage(Objects.requireNonNull(sender.getSubject()), file);
@@ -231,10 +243,16 @@ public class AiDrawCommand extends CompositeCommand {
                             .append(String.valueOf(imgSaveTime - getImgEndTime)).append("+")
                             .append(String.valueOf(imgUploadTime - imgSaveTime)).append("=")
                             .append(String.valueOf(imgUploadTime - statTime)).append("ms")
+                            .append(" ≈ ").append(BigDecimal.valueOf(imgUploadTime - statTime).divide(BigDecimal.valueOf(1000),2, RoundingMode.CEILING).toString()).append("s")
                     ;
                 }
+                //数据排版优化
+                if (printCostTime && showTags) {
+                    chainBuilder.append("\n");
+                }
+                //展示tags
                 if (showTags) {
-                    chainBuilder.append("生成tags：").append(finalTags);
+                    chainBuilder.append("生成tags：").append("(masterpiece, best quality,) ").append(finalTags);
                 }
                 sender.sendMessage(chainBuilder.build());
             } catch (Exception e) {

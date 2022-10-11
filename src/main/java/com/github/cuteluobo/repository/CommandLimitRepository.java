@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class CommandLimitRepository {
     private CommandLimitMapper commandLimitMapper;
-    private static CommandLimitRepository INSTANCE;
+    private static volatile CommandLimitRepository INSTANCE;
 //    /**
 //     * <群号，<个人号，权限对象>>
 //     */
@@ -82,7 +82,9 @@ public class CommandLimitRepository {
      */
     public static CommandLimitRepository getInstance() {
         if (INSTANCE == null) {
-            INSTANCE = new CommandLimitRepository();
+            synchronized (CommandLimitRepository.class) {
+                INSTANCE = new CommandLimitRepository();
+            }
         }
         return INSTANCE;
     }
@@ -96,28 +98,58 @@ public class CommandLimitRepository {
      * @return 指令限制对象，无对应结果时为null
      */
     public CommandLimit getCommandLimit(Long groupId, Long userId,String primary) {
+
         //第一优先-完全匹配
-        CommandLimit allMatch = tempMap.get(createKey(groupId, userId, primary));
+        String key = createKey(groupId, userId, primary);
+        CommandLimit allMatch = tempMap.get(key);
         if (allMatch != null) {
             return allMatch;
         }
-        //第二优先-用户ID匹配
-        CommandLimit userMatch = tempMap.get(createKey(null, userId, primary));
+        String key2 = createKey(null, userId, primary);
+        //第二优先-用户ID与指令匹配
+        CommandLimit userMatch = tempMap.get(key2);
         if (userMatch != null) {
             return userMatch;
         }
 
-        //第三优先-群ID匹配
-        CommandLimit groupMatch = tempMap.get(createKey(groupId, null, primary));
+        //第三优先-群ID与指令匹配
+        String key3 = createKey(groupId, null, primary);
+        CommandLimit groupMatch = tempMap.get(key3);
         if (groupMatch != null) {
             return groupMatch;
         }
-        //第四优先-全局匹配
-        CommandLimit globalMatch = tempMap.get(createKey(null, null, primary));
+        //第四优先-指令匹配
+        String key4 = createKey(null, null, primary);
+        CommandLimit commandMatch = tempMap.get(key4);
+        if (commandMatch != null) {
+            return commandMatch;
+        }
+        //第二优先-用户ID全指令匹配
+        String key5 = createKey(null, userId, null);
+        CommandLimit userAllCommandMatch = tempMap.get(key5);
+        if (userAllCommandMatch != null) {
+            return userAllCommandMatch;
+        }
+        //第二优先-用户ID全指令匹配
+        String key6 = createKey(groupId, null, null);
+        CommandLimit groupAllCommandMatch = tempMap.get(key6);
+        if (groupAllCommandMatch != null) {
+            return groupAllCommandMatch;
+        }
+        //最低-全局指令匹配
+        String keyLast = createKey(null, null, null);
+        CommandLimit globalMatch = tempMap.get(keyLast);
         if (globalMatch != null) {
             return globalMatch;
         }
         return null;
     }
 
+    public Map<String, CommandLimit> getTempMap() {
+        return tempMap;
+    }
+
+    public void setTempMap(Map<String, CommandLimit> tempMap) {
+        this.tempMap = tempMap;
+    }
 }
