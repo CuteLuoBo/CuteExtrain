@@ -1,7 +1,17 @@
 package com.github.cuteluobo.command;
 
+import com.amihaiemil.eoyaml.YamlMapping;
+import com.amihaiemil.eoyaml.YamlNode;
 import com.github.cuteluobo.CuteExtra;
+import com.github.cuteluobo.enums.config.MainConfigEnum;
+import com.github.cuteluobo.enums.config.impl.AiDrawConfigEnum;
+import com.github.cuteluobo.enums.config.impl.WebUiConfig;
+import com.github.cuteluobo.pojo.aidraw.AiImageCreateParameter;
 import com.github.cuteluobo.repository.GlobalConfig;
+import com.github.cuteluobo.repository.WebUiServerRepository;
+import com.github.cuteluobo.service.AiDrawService;
+import com.github.cuteluobo.service.Impl.WebUiAiDrawServiceImpl;
+import com.github.cuteluobo.task.MyThreadFactory;
 import com.github.cuteluobo.util.AiImgUtils;
 import com.github.cuteluobo.util.FileIoUtils;
 import com.github.cuteluobo.util.StringUtils;
@@ -38,6 +48,7 @@ import java.util.concurrent.*;
  * @date 2022/10/8 14:01
  */
 public class AiDrawCommand extends CompositeCommand {
+    //TODO 增加重载和线上添加服务
 
     Logger logger = LoggerFactory.getLogger(AiDrawCommand.class);
 
@@ -45,8 +56,8 @@ public class AiDrawCommand extends CompositeCommand {
     private static final String PRIMARY = "aidraw";
 
     private ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(1, 10, 30, TimeUnit.SECONDS
-            , new SynchronousQueue<Runnable>(true)
-            ,Executors.defaultThreadFactory());
+            , new SynchronousQueue<>(true)
+            ,new MyThreadFactory("AiDrawCommandPools"));
 
     public AiDrawCommand() throws PermissionRegistryConflictException {
         super(CuteExtra.INSTANCE, PRIMARY, SECOND_COMMAND
@@ -59,7 +70,7 @@ public class AiDrawCommand extends CompositeCommand {
 
 
     @SubCommand({"translate","tr","翻译"})
-    public Boolean translate(@NotNull CommandSender sender, String... message) throws IOException {
+    public Boolean translate(@NotNull CommandSender sender, String... message) {
         User user = sender.getUser();
         if (user != null) {
             return tagsMessageHandlerAndExecTask(true, true, true,true, sender, message);
@@ -68,7 +79,7 @@ public class AiDrawCommand extends CompositeCommand {
     }
 
     @SubCommand({"normal","n","默认"})
-    public Boolean normal(@NotNull CommandSender sender, String... message) throws IOException {
+    public Boolean normal(@NotNull CommandSender sender, String... message){
         User user = sender.getUser();
         if (user != null) {
             return tagsMessageHandlerAndExecTask(true, true, true,false, sender, message);
@@ -77,7 +88,7 @@ public class AiDrawCommand extends CompositeCommand {
     }
 
     @SubCommand({"nosafe","h","不安全生成"})
-    public Boolean nosafe(@NotNull CommandSender sender, String... message) throws IOException {
+    public Boolean nosafe(@NotNull CommandSender sender, String... message){
         User user = sender.getUser();
         //只处理非控制台消息
         if (user != null) {
@@ -91,10 +102,10 @@ public class AiDrawCommand extends CompositeCommand {
     }
 
     @SubCommand({"loadToken","lt","加载token"})
-    public Boolean loadToken(@NotNull CommandSender sender, String... message) throws IOException {
+    public Boolean loadToken(@NotNull CommandSender sender, String... message){
         MessageChainBuilder chainBuilder = new MessageChainBuilder();
         User user = sender.getUser();
-        long userId = 0;
+        long userId;
         if (user != null) {
             userId = user.getId();
             if (userId != GlobalConfig.ADMIN_ID) {
@@ -125,11 +136,11 @@ public class AiDrawCommand extends CompositeCommand {
     }
 
     @SubCommand({"help","帮助"})
-    public Boolean help(@NotNull CommandSender sender) throws IOException {
+    public Boolean help(@NotNull CommandSender sender){
         MessageChainBuilder chainBuilder = new MessageChainBuilder();
         //回复消息
-        if (sender instanceof CommandSenderOnMessage) {
-            CommandSenderOnMessage senderOnMessage = (CommandSenderOnMessage) sender;
+        if (sender instanceof CommandSenderOnMessage<?>) {
+            CommandSenderOnMessage<?> senderOnMessage = (CommandSenderOnMessage<?>) sender;
             chainBuilder.append(new QuoteReply(senderOnMessage.getFromEvent().getSource()));
         }
         //消息主体
@@ -157,14 +168,25 @@ public class AiDrawCommand extends CompositeCommand {
     private boolean tagsMessageHandlerAndExecTask(boolean safe, boolean printCostTime, boolean showTags,boolean allowTranslate,CommandSender sender,String... message){
         MessageChainBuilder chainBuilder = new MessageChainBuilder();
         //回复消息
-        if (sender instanceof CommandSenderOnMessage) {
-            CommandSenderOnMessage senderOnMessage = (CommandSenderOnMessage) sender;
+        if (sender instanceof CommandSenderOnMessage<?>) {
+            CommandSenderOnMessage<?> senderOnMessage = (CommandSenderOnMessage<?>) sender;
             //回复源消息
             chainBuilder.append(new QuoteReply(senderOnMessage.getFromEvent().getSource()));
-            if (GlobalConfig.getInstance().getNovelaiToken() == null || GlobalConfig.getInstance().getNovelaiToken().trim().length() == 0) {
-                chainBuilder.append("token未加载，此功能无效");
+            YamlMapping configMapping = GlobalConfig.getInstance().getAiDrawMapping();
+            String aiDrawEnable = configMapping.string(AiDrawConfigEnum.ENABLE.getLabel());
+            if (configMapping == null || aiDrawEnable == null || !"true".equalsIgnoreCase(aiDrawEnable.trim())) {
+                chainBuilder.append("ai绘图功能已关闭");
                 sender.sendMessage(chainBuilder.build());
                 return false;
+            }
+            //webui未启用时，检验novelai
+            if (WebUiServerRepository.getInstance().isEmpty()) {
+                String novelaiToken = configMapping.string(AiDrawConfigEnum.NOVELAI_TOKEN.getLabel());
+                if (novelaiToken == null || novelaiToken.trim().length() == 0) {
+                    chainBuilder.append("无可用服务，此功能无效");
+                    sender.sendMessage(chainBuilder.build());
+                    return false;
+                }
             }
             //校验tags
             if (String.join("", message).trim().length() == 0) {
@@ -172,7 +194,13 @@ public class AiDrawCommand extends CompositeCommand {
                 sender.sendMessage(chainBuilder.build());
                 return false;
             }
-            String tags = String.join(",", message);
+            String tags;
+            //翻译时URL传链接空格会出现未知错误
+            if (allowTranslate) {
+                tags = String.join(",", message);
+            } else {
+                tags = String.join(" ", message);
+            }
             tags = StringUtils.tagsCommaHandler(tags);
             try {
                 threadPoolExecutor.submit(createAiDrawTask(tags,safe,printCostTime,showTags,allowTranslate,chainBuilder,senderOnMessage));
@@ -196,7 +224,7 @@ public class AiDrawCommand extends CompositeCommand {
      * @param sender        指令执行者（用于异步返回）
      * @return 创建任务
      */
-    private Runnable createAiDrawTask(String tags, boolean safe, boolean printCostTime, boolean showTags,boolean allowTranslate, MessageChainBuilder chainBuilder, CommandSenderOnMessage sender){
+    private Runnable createAiDrawTask(String tags, boolean safe, boolean printCostTime, boolean showTags,boolean allowTranslate, MessageChainBuilder chainBuilder, CommandSenderOnMessage<?> sender){
         return () -> {
             try {
                 long statTime = System.currentTimeMillis();
@@ -208,12 +236,23 @@ public class AiDrawCommand extends CompositeCommand {
                             finalTags = TranslateUtils.autoToEn(tags);
                         } catch (Exception e) {
                             finalTags = tags;
-                            chainBuilder.append("调用翻译API失效，使用直接传入");
+                            chainBuilder.append("调用翻译API失效，使用直接传入").append("\n");
+                            logger.error("调用翻译API失败", e);
                         }
                     }
                 }
                 //从API中获取图片信息
-                byte[] bytes = AiImgUtils.getImg("masterpiece, best quality,"+finalTags, safe);
+//                byte[] bytes = AiImgUtils.getImg("masterpiece, best quality,"+finalTags, safe);
+                //获取服务器
+                AiDrawService aiDrawService = WebUiServerRepository.getInstance().randomService(safe);
+                if (aiDrawService == null) {
+                    chainBuilder.append("无可用服务，指令执行失败");
+                    sender.sendMessage(chainBuilder.build());
+                    return;
+                }
+                //后续增加更多自定义指令
+                AiImageCreateParameter aiImageCreateParameter = new AiImageCreateParameter(finalTags);
+                byte[] bytes = aiDrawService.txt2img(aiImageCreateParameter);
                 long getImgEndTime = System.currentTimeMillis();
                 if (bytes.length == 0) {
                     chainBuilder.append("无图片数据，可能结果：token失效/tags错误");
@@ -222,13 +261,14 @@ public class AiDrawCommand extends CompositeCommand {
                 }
                 //保存到本地
                 File file;
+                String saveTags = finalTags.replace(File.separatorChar, '-');
                 try {
-                    file = FileIoUtils.createFileTemp(safe?"safe":"noSafe", finalTags.replace(File.separatorChar, '-')+".png");
+                    file = FileIoUtils.createFileTemp(safe ? "safe" : "noSafe", (saveTags.length() > 64 ? saveTags.substring(0, 64) : saveTags) + ".png");
                     Files.write(file.toPath(), bytes, StandardOpenOption.CREATE);
                 }
                 //文件名过长时，会导致错误
-                catch (FileNotFoundException fileNotFoundException) {
-                    file = FileIoUtils.createFileTemp(safe?"safe":"noSafe", "too_long_ignore"+".png");
+                catch (IOException ioException) {
+                    file = FileIoUtils.createFileTemp(safe?"safe":"noSafe", "ioException"+".png");
                     Files.write(file.toPath(), bytes, StandardOpenOption.CREATE);
                 }
 
@@ -256,7 +296,7 @@ public class AiDrawCommand extends CompositeCommand {
                 }
                 sender.sendMessage(chainBuilder.build());
             } catch (Exception e) {
-                chainBuilder.append("图片生成错误： "+e.getLocalizedMessage());
+                chainBuilder.append("图片生成错误： ").append(e.getLocalizedMessage());
                 sender.sendMessage(chainBuilder.build());
                 logger.error("生成/上传图片错误", e);
             }

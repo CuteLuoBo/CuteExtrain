@@ -3,6 +3,7 @@ package com.github.cuteluobo.util;
 import com.alibaba.fastjson.JSON;
 import com.github.cuteluobo.pojo.NovelaiGenerateArgs;
 import com.github.cuteluobo.repository.GlobalConfig;
+import com.github.cuteluobo.task.MyThreadFactory;
 
 import java.io.IOException;
 import java.net.URI;
@@ -24,8 +25,8 @@ import java.util.stream.Collectors;
  */
 public class AiImgUtils {
     private static ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(1, 10, 30, TimeUnit.SECONDS
-            , new SynchronousQueue<Runnable>(true)
-            , Executors.defaultThreadFactory());
+            , new SynchronousQueue<>(true)
+            , new MyThreadFactory("AiImgUtils"));
     private static HttpClient httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).executor(threadPoolExecutor).build();
     static class PostData{
         String input;
@@ -62,7 +63,7 @@ public class AiImgUtils {
             this.parameters = parameters;
         }
     }
-    public static byte[] getImg(String text, boolean safe) throws URISyntaxException, IOException, InterruptedException, NoSuchAlgorithmException {
+    public static byte[] getImg(String text, boolean safe) throws URISyntaxException, IOException, InterruptedException {
         PostData postData = new PostData("masterpiece, best quality,"+text, safe?"safe-diffusion":"nai-diffusion", new NovelaiGenerateArgs());
         String json = JSON.toJSONString(postData);
         HttpRequest httpRequest = HttpRequest.newBuilder()

@@ -11,7 +11,7 @@ import com.alibaba.fastjson.JSONArray;
 public class StableDiffusionWebUiText2ImgPostObject {
     private JSONArray data;
     /**
-     * 通信类型，11=提交操作
+     * 通信类型，11=提交操作,134=更换模型，data=["sfw-last-model.ckpt [202fcec0]"]
      */
     private int fn_index = 11;
 

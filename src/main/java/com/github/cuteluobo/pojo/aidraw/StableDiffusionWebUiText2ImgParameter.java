@@ -1,5 +1,6 @@
 package com.github.cuteluobo.pojo.aidraw;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import java.math.BigDecimal;
@@ -10,9 +11,28 @@ import java.math.BigDecimal;
  * @author CuteLuoBo
  * @date 2022/10/9 12:03
  */
-public class StableDiffusionWebUiText2ImgParameter {
+public class StableDiffusionWebUiText2ImgParameter extends AiImageCreateParameter {
+    public StableDiffusionWebUiText2ImgParameter(String prompt, int steps, int batchCount, int batchSize, int height, int width) {
+        super(prompt);
+        this.prompt = prompt;
+        this.steps = steps;
+        this.batchCount = batchCount;
+        BatchSize = batchSize;
+        this.height = height;
+        this.width = width;
+    }
+    public StableDiffusionWebUiText2ImgParameter(String prompt, int height, int width) {
+        super(prompt);
+        this.prompt = prompt;
+        this.height = height;
+        this.width = width;
+    }
+    public StableDiffusionWebUiText2ImgParameter() {
+        super();
+    }
 
     /**
+     * webui中接收数据的特定结构体
      * txt2img_args = dict(
      *                 fn=wrap_gradio_gpu_call(modules.txt2img.txt2img),
      *                 _js="submit",
@@ -51,7 +71,7 @@ public class StableDiffusionWebUiText2ImgParameter {
     /**
      * 消极提示
      */
-    private String lowPrompt;
+    private String lowPrompt = "lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry";
 
     /**
      * 提示类型1
@@ -65,22 +85,22 @@ public class StableDiffusionWebUiText2ImgParameter {
     /**
      * 生成步数(1-150)
      */
-    private int steps;
+    private int steps = 30;
 
     /**
      * 生成方法
      */
-    private StableDiffusionWebUiMethod method = StableDiffusionWebUiMethod.Euler_A;
+    private String method = StableDiffusionWebUiMethod.Euler_A.getArgsText();
 
     /**
      * 针对面部修复
      */
-    private boolean restoreFaces = true;
+    private boolean restoreFaces ;
 
     /**
      * 平铺图像
      */
-    private boolean tiling = false;
+    private boolean tiling ;
 
     /**
      * 单次生成图片数量(1-16)
@@ -95,12 +115,12 @@ public class StableDiffusionWebUiText2ImgParameter {
     /**
      * 与提示的吻合程度，值越低越有新意（意料之外的图像增加）
      */
-    private BigDecimal cFGScale = BigDecimal.valueOf(11);
+    private BigDecimal cfgScale = BigDecimal.valueOf(11);
 
     /**
      * 生成种子
      */
-    private int seed = -1;
+    private long seed = -1;
 
     /**
      * 变体种子-和原种子一起混合到1代中
@@ -255,21 +275,74 @@ public class StableDiffusionWebUiText2ImgParameter {
      */
     private String html = "";
 
-    public String getPrompt() {
-        return prompt;
+    /**
+     * 获取传回用的参数数组
+     * @param data 参数对象
+     * @return 转换完成的JSONArray
+     */
+    public static JSONArray createDataArray(StableDiffusionWebUiText2ImgParameter data) {
+        JSONArray jsonArray = new JSONArray();
+        jsonArray.add(data.getPrompt());
+        jsonArray.add(data.getLowPrompt());
+        jsonArray.add(data.getPrompt_Styles1());
+        jsonArray.add(data.getPrompt_Styles2());
+        jsonArray.add(data.getSteps());
+        jsonArray.add(data.getMethod());
+        jsonArray.add(data.isRestoreFaces());
+        jsonArray.add(data.isTiling());
+        jsonArray.add(data.getBatchCount());
+        jsonArray.add(data.getBatchSize());
+        jsonArray.add(data.getCfgScale());
+        jsonArray.add(data.getSeed());
+        jsonArray.add(data.getVariationSeed());
+        jsonArray.add(data.getVariationStrength());
+        jsonArray.add(data.getResizeHeight());
+        jsonArray.add(data.getResizeWidth());
+        jsonArray.add(data.isInterrogate());
+        jsonArray.add(data.getHeight());
+        jsonArray.add(data.getWidth());
+        jsonArray.add(data.isHighresFix());
+        jsonArray.add(data.isScaleLatent());
+        jsonArray.add(data.getDenoisingStrength());
+        jsonArray.add(data.getScript());
+        jsonArray.add(data.isScriptArgs1());
+        jsonArray.add(data.isScriptArgs2());
+        jsonArray.add(data.getFaceRestorationModel());
+        jsonArray.add(data.getScriptArgs4());
+        jsonArray.add(data.getScriptArgs5());
+        jsonArray.add(data.getScriptArgs6());
+        jsonArray.add(data.getScriptArgs7());
+        jsonArray.add(data.getScriptArgs8());
+        jsonArray.add(data.isDrawLegend());
+        jsonArray.add(data.isKeepSeeds());
+        jsonArray.add(data.getUnkown1());
+        jsonArray.add(data.getJson());
+        jsonArray.add(data.getHtml());
+        return jsonArray;
     }
 
-    public void setPrompt(String prompt) {
-        this.prompt = prompt;
+    /**
+     * 从基本参数中转换完全对象
+     * @param data 基本数据
+     * @return 传回对象
+     */
+    public static StableDiffusionWebUiText2ImgParameter convert(AiImageCreateParameter data) {
+        StableDiffusionWebUiText2ImgParameter webUiData = new StableDiffusionWebUiText2ImgParameter();
+        webUiData.setPrompt(data.getPrompt());
+        webUiData.setLowPrompt(data.getLowPrompt());
+        webUiData.setBatchCount(data.getBatchCount());
+        webUiData.setBatchSize(data.getBatchSize());
+        webUiData.setHeight(data.getHeight());
+        webUiData.setWidth(data.getWidth());
+        webUiData.setCfgScale(data.getCfgScale());
+        webUiData.setDenoisingStrength(data.getDenoisingStrength());
+        webUiData.setMethod(data.getMethod());
+        webUiData.setSeed(data.getSeed());
+        webUiData.setSteps(data.getSteps());
+        return webUiData;
     }
 
-    public String getLowPrompt() {
-        return lowPrompt;
-    }
 
-    public void setLowPrompt(String lowPrompt) {
-        this.lowPrompt = lowPrompt;
-    }
 
     public String getPrompt_Styles1() {
         return prompt_Styles1;
@@ -287,22 +360,6 @@ public class StableDiffusionWebUiText2ImgParameter {
         this.prompt_Styles2 = prompt_Styles2;
     }
 
-    public int getSteps() {
-        return steps;
-    }
-
-    public void setSteps(int steps) {
-        this.steps = steps;
-    }
-
-    public StableDiffusionWebUiMethod getMethod() {
-        return method;
-    }
-
-    public void setMethod(StableDiffusionWebUiMethod method) {
-        this.method = method;
-    }
-
     public boolean isRestoreFaces() {
         return restoreFaces;
     }
@@ -317,38 +374,6 @@ public class StableDiffusionWebUiText2ImgParameter {
 
     public void setTiling(boolean tiling) {
         this.tiling = tiling;
-    }
-
-    public int getBatchCount() {
-        return batchCount;
-    }
-
-    public void setBatchCount(int batchCount) {
-        this.batchCount = batchCount;
-    }
-
-    public int getBatchSize() {
-        return BatchSize;
-    }
-
-    public void setBatchSize(int batchSize) {
-        BatchSize = batchSize;
-    }
-
-    public BigDecimal getcFGScale() {
-        return cFGScale;
-    }
-
-    public void setcFGScale(BigDecimal cFGScale) {
-        this.cFGScale = cFGScale;
-    }
-
-    public int getSeed() {
-        return seed;
-    }
-
-    public void setSeed(int seed) {
-        this.seed = seed;
     }
 
     public int getVariationSeed() {
@@ -391,22 +416,6 @@ public class StableDiffusionWebUiText2ImgParameter {
         this.interrogate = interrogate;
     }
 
-    public int getHeight() {
-        return height;
-    }
-
-    public void setHeight(int height) {
-        this.height = height;
-    }
-
-    public int getWidth() {
-        return width;
-    }
-
-    public void setWidth(int width) {
-        this.width = width;
-    }
-
     public boolean isHighresFix() {
         return highresFix;
     }
@@ -421,14 +430,6 @@ public class StableDiffusionWebUiText2ImgParameter {
 
     public void setScaleLatent(boolean scaleLatent) {
         ScaleLatent = scaleLatent;
-    }
-
-    public BigDecimal getDenoisingStrength() {
-        return DenoisingStrength;
-    }
-
-    public void setDenoisingStrength(BigDecimal denoisingStrength) {
-        DenoisingStrength = denoisingStrength;
     }
 
     public String getScript() {

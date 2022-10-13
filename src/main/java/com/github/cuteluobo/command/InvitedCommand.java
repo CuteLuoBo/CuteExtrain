@@ -50,13 +50,13 @@ public class InvitedCommand  extends CompositeCommand {
      * @return
      */
     @SubCommand({"group","g"})
-    public Boolean group(CommandSender sender, long groupId,Boolean opinion){
+    public Boolean group(CommandSender sender, long groupId,String opinion){
         if (sender.getUser() != null && GlobalConfig.ADMIN_ID == sender.getUser().getId()) {
             //初始化消息builder
             MessageChainBuilder messageChainBuilder = new MessageChainBuilder();
             //回复消息
-            if (sender instanceof CommandSenderOnMessage) {
-                CommandSenderOnMessage senderOnMessage = (CommandSenderOnMessage) sender;
+            if (sender instanceof CommandSenderOnMessage<?>) {
+                CommandSenderOnMessage<?> senderOnMessage = (CommandSenderOnMessage<?>) sender;
                 messageChainBuilder.append(new QuoteReply(senderOnMessage.getFromEvent().getSource()));
             }
             //获取缓存事件
@@ -64,12 +64,13 @@ public class InvitedCommand  extends CompositeCommand {
             if (event == null) {
                 messageChainBuilder.append("事件ID无效或已过期");
             }else {
-                if (opinion) {
+                boolean opinionResult = "t".equalsIgnoreCase(opinion) || "true".equalsIgnoreCase(opinion);
+                if (opinionResult) {
                     event.accept();
                     messageChainBuilder.append("群邀请已通过");
                 } else {
                     event.ignore();
-                    messageChainBuilder.append("群邀请已忽略");
+                    messageChainBuilder.append("群邀请已拒绝/忽略");
                 }
                 InvitedEventRepository.INSTANCE.getGroupInvitedJoinEventMap().remove(groupId);
             }
@@ -88,13 +89,13 @@ public class InvitedCommand  extends CompositeCommand {
      * @return
      */
     @SubCommand({"friend","f"})
-    public Boolean friend(CommandSender sender, long id,Boolean opinion,Boolean addBlackList){
+    public Boolean friend(CommandSender sender, long id,String opinion,String addBlackList){
         if (sender.getUser() != null && GlobalConfig.ADMIN_ID == sender.getUser().getId()) {
             //初始化消息builder
             MessageChainBuilder messageChainBuilder = new MessageChainBuilder();
             //回复消息
-            if (sender instanceof CommandSenderOnMessage) {
-                CommandSenderOnMessage senderOnMessage = (CommandSenderOnMessage) sender;
+            if (sender instanceof CommandSenderOnMessage<?>) {
+                CommandSenderOnMessage<?> senderOnMessage = (CommandSenderOnMessage<?>) sender;
                 messageChainBuilder.append(new QuoteReply(senderOnMessage.getFromEvent().getSource()));
             }
             //获取缓存事件
@@ -102,12 +103,14 @@ public class InvitedCommand  extends CompositeCommand {
             if (event == null) {
                 messageChainBuilder.append("事件ID无效或已过期");
             }else {
-                if (opinion) {
+                boolean friend = "t".equalsIgnoreCase(opinion) || "true".equalsIgnoreCase(opinion);
+                if (friend) {
                     event.accept();
                     messageChainBuilder.append("好友添加申请已通过");
                 } else {
-                    event.reject(addBlackList);
-                    messageChainBuilder.append("好友添加申请已拒绝").append(addBlackList ? "+拉黑" : "");
+                    boolean addBlack = "t".equalsIgnoreCase(addBlackList) || "true".equalsIgnoreCase(addBlackList);
+                    event.reject(addBlack);
+                    messageChainBuilder.append("好友添加申请已拒绝").append(addBlack ? "+拉黑" : "");
                 }
                 InvitedEventRepository.INSTANCE.getFriendRequestEventMap().remove(id);
             }

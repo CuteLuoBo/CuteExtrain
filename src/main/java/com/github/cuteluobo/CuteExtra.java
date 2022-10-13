@@ -1,37 +1,26 @@
 package com.github.cuteluobo;
 
-import cn.pomit.mybatis.ProxyHandlerFactory;
 import cn.pomit.mybatis.configuration.MybatisConfiguration;
 import com.github.cuteluobo.command.AiDrawCommand;
 import com.github.cuteluobo.command.InvitedCommand;
 import com.github.cuteluobo.command.RollCommand;
 import com.github.cuteluobo.command.YysUnitInfoCommand;
-import com.github.cuteluobo.enums.DatabaseTable;
 import com.github.cuteluobo.mapper.CommandLimitMapper;
 import com.github.cuteluobo.mapper.SystemMapper;
 import com.github.cuteluobo.mapper.YysUnitMapper;
 import com.github.cuteluobo.repository.GlobalConfig;
 import com.github.cuteluobo.repository.InvitedEventRepository;
-import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.console.command.CommandManager;
-import net.mamoe.mirai.console.command.CommandSender;
-import net.mamoe.mirai.console.command.MemberCommandSender;
-import net.mamoe.mirai.console.command.UserCommandSender;
 import net.mamoe.mirai.console.permission.*;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescriptionBuilder;
-import net.mamoe.mirai.contact.User;
 import net.mamoe.mirai.event.GlobalEventChannel;
 import net.mamoe.mirai.event.Listener;
 import net.mamoe.mirai.event.events.*;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.MessageChainBuilder;
-import net.mamoe.mirai.utils.LoggerAdapters;
 import net.mamoe.mirai.utils.MiraiLogger;
 import org.apache.ibatis.session.Configuration;
-import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import net.mamoe.mirai.console.permission.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -56,7 +45,7 @@ public final class CuteExtra extends JavaPlugin {
     public static final CuteExtra INSTANCE = new CuteExtra();
     public static final String PLUGIN_NAME = "cute-extra 模拟抽卡插件";
     public static final String PLUGIN_ID = "com.github.cuteluobo.cute-extra";
-    public static final String PLUGIN_VERSION = "0.6.3";
+    public static final String PLUGIN_VERSION = "0.7.1";
     public static final String DATABASE_FILE_NAME = "database.sqlite";
     /**
      * 基础权限
@@ -80,7 +69,7 @@ public final class CuteExtra extends JavaPlugin {
 
 
 
-    public void onLoad() throws SQLException {
+    public void onLoad() {
 
     }
 
@@ -97,39 +86,41 @@ public final class CuteExtra extends JavaPlugin {
         }
 //        https://github.com/mamoe/mirai/blob/dev/docs/Events.md#%E5%BF%AB%E9%80%9F%E6%8C%87%E5%AF%BC
 //        //群邀请监听
-        Listener botInvitedJoinGroupRequestEventListener = GlobalEventChannel.INSTANCE.subscribeAlways(BotInvitedJoinGroupRequestEvent.class, event -> {
+        Listener<BotInvitedJoinGroupRequestEvent> botInvitedJoinGroupRequestEventListener = GlobalEventChannel.INSTANCE.subscribeAlways(BotInvitedJoinGroupRequestEvent.class, event -> {
             MessageChain chain = new MessageChainBuilder()
                     .append("群加入邀请事件消息 ID: ").append(String.valueOf(event.getEventId())).append("\n")
                     .append("邀请人：").append(event.getInvitorNick()).append("(").append(String.valueOf(event.getInvitorId())).append(")\n")
                     .append("对应群：").append(event.getGroupName()).append("(").append(String.valueOf(event.getGroupId())).append(")\n")
                     .append("输入/invited 或/i group/g <群号> <ture/false> 来处理事件\n")
-                    .append("例:/i g 1234567 ture -拒绝1234567群邀请\n")
+                    .append("例:/i g 1234567 true -拒绝1234567群邀请\n")
                     .build();
             if (event.getBot().getFriend(GlobalConfig.ADMIN_ID) != null) {
                 event.getBot().getFriend(GlobalConfig.ADMIN_ID).sendMessage(chain);
+
             } else {
-                logger.warning("机器人没有管理员"+GlobalConfig.ADMIN_ID+"好友，无法发送通知");
+                logger.warning("机器人没有管理员" + GlobalConfig.ADMIN_ID + "好友，无法发送群邀请通知");
             }
             //缓存事件
             InvitedEventRepository.INSTANCE.getGroupInvitedJoinEventMap().put(event.getGroupId(),event);
         });
         //好友申请监听
-        Listener botInvitedFriendsRequestEventListener = GlobalEventChannel.INSTANCE.subscribeAlways(NewFriendRequestEvent.class, event -> {
+        Listener<NewFriendRequestEvent> botInvitedFriendsRequestEventListener = GlobalEventChannel.INSTANCE.subscribeAlways(NewFriendRequestEvent.class, event -> {
             MessageChain chain = new MessageChainBuilder()
                     .append("好友添加事件消息 ID: ").append(String.valueOf(event.getEventId())).append("\n")
                     .append("添加人：").append(event.getFromNick()).append("(").append(String.valueOf(event.getFromId())).append(")\n")
-                    .append("来自群：").append(event.getFromGroup()==null?"无":event.getFromGroup().getName()).append("(").append(String.valueOf(event.getFromGroupId())).append(")\n")
+                    .append("来自群：").append(event.getFromGroup() == null ? "无" : event.getFromGroup().getName()).append("(").append(String.valueOf(event.getFromGroupId())).append(")\n")
                     .append("好友申请消息：").append(event.getMessage()).append("\n")
                     .append("默认同意\n")
                     .build();
             if (event.getBot().getFriend(GlobalConfig.ADMIN_ID) != null) {
                 event.getBot().getFriend(GlobalConfig.ADMIN_ID).sendMessage(chain);
             } else {
-                logger.warning("机器人没有管理员"+GlobalConfig.ADMIN_ID+"好友，无法发送通知");
+                logger.warning("机器人没有管理员"+GlobalConfig.ADMIN_ID+"好友，无法发送好友申请通知");
             }
-            event.accept();
+            //默认通过
+//            event.accept();
             //非默认通过时，缓存事件进行处理
-//            InvitedEventRepository.INSTANCE.getFriendRequestEventMap().put(event.getFromId(),event);
+            InvitedEventRepository.INSTANCE.getFriendRequestEventMap().put(event.getFromId(),event);
         });
     }
 
@@ -164,6 +155,7 @@ public final class CuteExtra extends JavaPlugin {
             try {
                 InputStream resourceStream = getResourceAsStream(DATABASE_FILE_NAME);
                 Path target = Paths.get(databaseFile.getPath());
+                assert resourceStream != null;
                 Files.copy(resourceStream, target);
                 logger.info("复制数据库完成");
             } catch (IOException e) {
@@ -185,8 +177,8 @@ public final class CuteExtra extends JavaPlugin {
         Configuration configuration = MybatisConfiguration.getSqlSessionFactory().getConfiguration();
         configuration.setMapUnderscoreToCamelCase(true);
         //以插件执行时通过包名导入无效，尝试手动指定class
-        Class[] classes = {CommandLimitMapper.class,SystemMapper.class,YysUnitMapper.class};
-        for (Class c : classes) {
+        Class<?>[] classes = {CommandLimitMapper.class,SystemMapper.class,YysUnitMapper.class};
+        for (Class<?> c : classes) {
             if (!configuration.getMapperRegistry().hasMapper(c)) {
                 configuration.addMapper(c);
             }
