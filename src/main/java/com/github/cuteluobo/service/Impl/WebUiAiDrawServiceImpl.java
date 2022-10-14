@@ -5,7 +5,6 @@ import com.alibaba.fastjson.JSONArray;
 import com.github.cuteluobo.excepiton.ServiceException;
 import com.github.cuteluobo.pojo.aidraw.*;
 import com.github.cuteluobo.service.AiDrawService;
-import com.github.cuteluobo.service.SystemLoginService;
 import com.github.cuteluobo.task.MyThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +16,9 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -68,33 +69,65 @@ public class WebUiAiDrawServiceImpl implements AiDrawService{
      * @throws ServiceException 获取异常/任务执行异常
      */
     @Override
-    public byte[] txt2img(AiImageCreateParameter parameter) throws IOException, InterruptedException, URISyntaxException, ServiceException {
+    public List<byte[]> txt2img(AiImageCreateParameter parameter) throws IOException, InterruptedException, URISyntaxException, ServiceException {
         if (token == null) {
             login();
         }
-        StableDiffusionWebUiText2ImgPostObject postData = new StableDiffusionWebUiText2ImgPostObject();
+        StableDiffusionWebUiText2ImgPostObject postData = new StableDiffusionWebUiText2ImgPostObject(11);
         StableDiffusionWebUiText2ImgParameter parameter1 = StableDiffusionWebUiText2ImgParameter.convert(parameter);
         postData.setData(StableDiffusionWebUiText2ImgParameter.createDataArray(parameter1));
         String json = JSON.toJSONString(postData);
-        HttpRequest httpRequest = HttpRequest.newBuilder()
+        HttpResponse<String> response = HTTP_CLIENT.send(createNormalApiPost(json), HttpResponse.BodyHandlers.ofString());
+        return imgDataParse(response);
+    }
+
+    @Override
+    public List<byte[]> img2img(AiImageCreateImg2ImgParameter parameter) throws ServiceException, URISyntaxException, IOException, InterruptedException {
+        if (token == null) {
+            login();
+        }
+        StableDiffusionWebUiText2ImgPostObject postData = new StableDiffusionWebUiText2ImgPostObject(29);
+        StableDiffusionWebUiImg2ImgParameter parameter1 = StableDiffusionWebUiImg2ImgParameter.convert(parameter);
+        postData.setData(StableDiffusionWebUiImg2ImgParameter.createDataArray(parameter1));
+        String json = JSON.toJSONString(postData);
+        HttpResponse<String> response = HTTP_CLIENT.send(createNormalApiPost(json), HttpResponse.BodyHandlers.ofString());
+        return imgDataParse(response);
+    }
+
+    /**
+     * 创建默认的HttpRequest对象
+     * POST + json
+     * @param postJson post的json
+     * @return HttpRequest对象
+     * @throws URISyntaxException URI创建失败
+     */
+    private HttpRequest createNormalApiPost(String postJson) throws URISyntaxException {
+        logger.debug("postJson:{}",postJson);
+        return HttpRequest.newBuilder()
                 .uri(new URI(mainUrl+"/api/predict/"))
-                .POST(HttpRequest.BodyPublishers.ofString(json))
+                .POST(HttpRequest.BodyPublishers.ofString(postJson))
                 .header("content-type","application/json")
                 .headers("Cookie", "access-token="+token)
                 .build();
-        HttpResponse<String> response = HTTP_CLIENT.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+    }
+
+    public List<byte[]> imgDataParse(HttpResponse<String> response) throws ServiceException, URISyntaxException, IOException, InterruptedException {
         //正常返回结果时
         if (response.statusCode() == 200 || response.statusCode() == 201) {
             String result = response.body().trim();
-            StableDiffusionWebUiText2ImgResult stableDiffusionWebUiText2ImgResult = JSON.parseObject(result, StableDiffusionWebUiText2ImgResult.class);
-            if (stableDiffusionWebUiText2ImgResult != null) {
-                JSONArray dataArray = stableDiffusionWebUiText2ImgResult.getData();
+            StableDiffusionWebUi2ImgResult stableDiffusionWebUi2ImgResult = JSON.parseObject(result, StableDiffusionWebUi2ImgResult.class);
+            if (stableDiffusionWebUi2ImgResult != null) {
+                JSONArray dataArray = stableDiffusionWebUi2ImgResult.getData();
                 if (dataArray != null && !dataArray.isEmpty()) {
                     JSONArray imageDataArray = dataArray.getJSONArray(0);
                     if (imageDataArray != null && !imageDataArray.isEmpty()) {
-                        String data = imageDataArray.getString(0).split("base64,")[1];
-                        byte[] bytes = Base64.getDecoder().decode(data);
-                        return bytes;
+                        List<byte[]> dataList = new ArrayList<>(imageDataArray.size());
+                        for (int i = 0; i < imageDataArray.size(); i++) {
+                            String data = imageDataArray.getString(i).split("base64,")[1];
+                            byte[] bytes = Base64.getDecoder().decode(data);
+                            dataList.add(bytes);
+                        }
+                        return dataList;
                     }
                 }
             }
@@ -106,13 +139,7 @@ public class WebUiAiDrawServiceImpl implements AiDrawService{
             }
             logger.error("请求错误,状态码:{},响应文本:{}", response.statusCode(), response.body());
         }
-        return new byte[0];
-    }
-
-    @Override
-    public byte[] img2img(BaseAiImageCreateImg2ImgParameter parameter) {
-        //TODO 待完成
-        return new byte[0];
+        return new ArrayList<>(0);
     }
 
     /**

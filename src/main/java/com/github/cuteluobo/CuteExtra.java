@@ -1,10 +1,8 @@
 package com.github.cuteluobo;
 
 import cn.pomit.mybatis.configuration.MybatisConfiguration;
-import com.github.cuteluobo.command.AiDrawCommand;
-import com.github.cuteluobo.command.InvitedCommand;
-import com.github.cuteluobo.command.RollCommand;
-import com.github.cuteluobo.command.YysUnitInfoCommand;
+import com.github.cuteluobo.command.*;
+import com.github.cuteluobo.listener.MessageListener;
 import com.github.cuteluobo.mapper.CommandLimitMapper;
 import com.github.cuteluobo.mapper.SystemMapper;
 import com.github.cuteluobo.mapper.YysUnitMapper;
@@ -45,7 +43,7 @@ public final class CuteExtra extends JavaPlugin {
     public static final CuteExtra INSTANCE = new CuteExtra();
     public static final String PLUGIN_NAME = "cute-extra 模拟抽卡插件";
     public static final String PLUGIN_ID = "com.github.cuteluobo.cute-extra";
-    public static final String PLUGIN_VERSION = "0.7.1";
+    public static final String PLUGIN_VERSION = "0.8.0";
     public static final String DATABASE_FILE_NAME = "database.sqlite";
     /**
      * 基础权限
@@ -79,6 +77,7 @@ public final class CuteExtra extends JavaPlugin {
             initDatasource();
             permissionExecute();
             commandReg();
+            listenerReg();
             logger.info(PLUGIN_NAME+" v"+PLUGIN_VERSION+"加载完成");
         } catch (PermissionRegistryConflictException | SQLException | IOException e) {
             logger.error(PLUGIN_NAME+" v"+PLUGIN_VERSION+"加载错误，请查看打印信息");
@@ -138,11 +137,16 @@ public final class CuteExtra extends JavaPlugin {
         PermissionService.permit(AbstractPermitteeId.AnyUser.INSTANCE, basePermission.getId());
     }
 
+    private void listenerReg() {
+        GlobalEventChannel.INSTANCE.registerListenerHost(new MessageListener());
+    }
+
     private void commandReg() throws PermissionRegistryConflictException {
         CommandManager.INSTANCE.registerCommand(new RollCommand(), false);
         CommandManager.INSTANCE.registerCommand(new InvitedCommand(), false);
         CommandManager.INSTANCE.registerCommand(new YysUnitInfoCommand(), false);
         CommandManager.INSTANCE.registerCommand(new AiDrawCommand(), false);
+        CommandManager.INSTANCE.registerCommand(new AdminCommand(), false);
     }
 
     private void initDatasource() throws SQLException, IOException {

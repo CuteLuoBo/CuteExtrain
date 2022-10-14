@@ -1,8 +1,12 @@
 package com.github.cuteluobo.util;
 
 import com.github.cuteluobo.repository.ResourceLoader;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.Base64;
 import java.util.Random;
 
 /**
@@ -51,5 +55,17 @@ public class FileIoUtils {
                 folder.delete();
             }
         }
+    }
+
+    /**
+     * 简单的读取文件数据转base64
+     * (未做安全验证)
+     * @param file 文件
+     * @return 转换后的base64
+     * @throws IOException IO读取错误
+     */
+    public static String loadFile2Base64(@NotNull File file) throws IOException {
+        byte[] bytes = Files.readAllBytes(file.toPath());
+        return Base64.getEncoder().encodeToString(bytes);
     }
 }

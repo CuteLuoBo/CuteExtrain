@@ -1,17 +1,21 @@
 package com.github.cuteluobo.pojo.aidraw;
 
 /**
- * 基本的AI绘图 img->img参数
+ * AI绘图 img->img参数
  * @author CuteLuoBo
  * @date 2022/10/11 16:33
  */
-public class BaseAiImageCreateImg2ImgParameter extends BaseAiImageCreateParameter {
+public class AiImageCreateImg2ImgParameter extends AiImageCreateParameter {
     /**
      * BASE64编码的图片格式
      */
     private String base64ImgData;
 
-    public BaseAiImageCreateImg2ImgParameter(String prompt) {
+    public AiImageCreateImg2ImgParameter() {
+        super();
+    }
+
+    public AiImageCreateImg2ImgParameter(String prompt) {
         super(prompt);
     }
 

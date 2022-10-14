@@ -8,7 +8,7 @@ import com.alibaba.fastjson.JSONArray;
  * @author CuteLuoBo
  * @date 2022/10/9 13:06
  */
-public class StableDiffusionWebUiText2ImgResult {
+public class StableDiffusionWebUi2ImgResult {
     /**
      * 平均生成时间
      */

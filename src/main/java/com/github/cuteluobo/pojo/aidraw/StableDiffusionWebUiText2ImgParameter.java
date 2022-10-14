@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * StableDiffusion-WebUi的请求参数-文本->文字
@@ -136,18 +137,18 @@ public class StableDiffusionWebUiText2ImgParameter extends AiImageCreateParamete
      * “从高度调整种子大小”：“尝试生成与使用相同种子以指定分辨率生成的图片类似的图片”，
      * (0-2048),64/step
      */
-    private int ResizeHeight = 0;
+    private int resizeHeight = 0;
 
     /**
      * “从宽度度调整种子大小”：“尝试生成与使用相同种子以指定分辨率生成的图片类似的图片”，
      * (0-2048),64/step
      */
-    private int ResizeWidth = 0;
+    private int resizeWidth = 0;
 
     /**
-     * 从现有图像重建提示并将其放入提示字段。
+     * 是否启用变体种子(界面相关检查点)
      */
-    private boolean interrogate = false;
+    private boolean variationCheckBox = false;
 
     /**
      * 图片高度
@@ -167,113 +168,18 @@ public class StableDiffusionWebUiText2ImgParameter extends AiImageCreateParamete
     /**
      * “缩放潜在”：“使用潜在空间中的图像缩放。替代方法是从潜在表示生成完整图像，将其放大，然后将其移回潜在空间。”，
      */
-    private boolean ScaleLatent = false;
+    private boolean scaleLatent = false;
 
     /**
      * “去噪强度”：“确定算法对图像内容的尊重程度。值为0时，什么都不会改变，值为1时，您将得到一个不相关的图像。当值低于1.0时，处理所需的步骤将少于“采样步骤”滑块指定的步骤。”，
      */
-    private BigDecimal DenoisingStrength = new BigDecimal("0.7");
+    private BigDecimal denoisingStrength = new BigDecimal("0.7");
 
     /**
-     * 图片处理脚本
-     * “None”：“不要做任何特别的事”，
-     *
-     * “Prompt matrix”：“使用竖线字符（|）将提示分成多个部分，脚本将为每个部分的组合创建一张图片（第一部分除外，它将以所有组合出现）”，
-     *
-     * “X/Y plot”：“创建一个网格，其中图像将具有不同的参数。使用下面的输入指定哪些参数将由列和行共享”，
-     *
-     * “Custom code”：“运行Python代码。仅限高级用户。必须使用--allow代码运行程序才能使其正常工作”，
+     * 脚本相关参数
      */
-    private String script = "None";
+    private StableDiffusionWebUiScriptBaseParameter stableDiffusionWebUiScriptBaseParameter = new StableDiffusionWebUiScriptBaseParameter();
 
-    /**
-     * 脚本参数
-     * script:Prompt matrix
-     * Put variable parts at start of prompt
-     */
-    private boolean scriptArgs1 = false;
-    /**
-     * 脚本参数-未知结果
-     * script:Prompts from file or textbox
-     * Show Textbox
-     */
-    private boolean scriptArgs2 = false;
-    /**
-     * 上传文件的文本解析结果
-     * script:Prompts from file or textbox
-     * {
-     *     data:String,
-     *     name:String,
-     *     size:int
-     * }
-     */
-    private JSONObject faceRestorationModel = null;
-
-    /**
-     * 脚本参数-未知结果
-     * script:Prompts from file or textbox
-     * 关联的文本框内容
-     */
-    private String scriptArgs4 = "";
-
-    /**
-     * 脚本参数-未知结果
-     * script:X/Y plot
-     * X type key1
-     */
-    private String scriptArgs5 = "Seed";
-
-    /**
-     * 脚本参数-未知结果
-     * script:X/Y plot
-     * X type value1
-     */
-    private String scriptArgs6 = "";
-
-    /**
-     * 脚本参数-未知结果
-     * script:X/Y plot
-     * X type key2
-     */
-    private String scriptArgs7 = "Steps";
-
-    /**
-     * 脚本参数-未知结果
-     * script:X/Y plot
-     * X type value2
-     */
-    private String scriptArgs8 = "";
-
-    /**
-     * 绘制图例
-     * script:X/Y plot
-     * 可选参数
-     */
-    private boolean DrawLegend = true;
-
-    /**
-     * Keep -1 for seeds
-     * 保留种子
-     * script:X/Y plot
-     * 可选参数
-     */
-    private boolean KeepSeeds = false;
-
-    /**
-     * 未知参数
-     */
-    private String unkown1 = null;
-
-    /**
-     * 传递的json，可能用于实际解析执行
-     * 或者是上次的执行结果
-     */
-    private String json = "";
-
-    /**
-     * 传递的html代码，可能是上次执行结果
-     */
-    private String html = "";
 
     /**
      * 获取传回用的参数数组
@@ -304,20 +210,8 @@ public class StableDiffusionWebUiText2ImgParameter extends AiImageCreateParamete
         jsonArray.add(data.isHighresFix());
         jsonArray.add(data.isScaleLatent());
         jsonArray.add(data.getDenoisingStrength());
-        jsonArray.add(data.getScript());
-        jsonArray.add(data.isScriptArgs1());
-        jsonArray.add(data.isScriptArgs2());
-        jsonArray.add(data.getFaceRestorationModel());
-        jsonArray.add(data.getScriptArgs4());
-        jsonArray.add(data.getScriptArgs5());
-        jsonArray.add(data.getScriptArgs6());
-        jsonArray.add(data.getScriptArgs7());
-        jsonArray.add(data.getScriptArgs8());
-        jsonArray.add(data.isDrawLegend());
-        jsonArray.add(data.isKeepSeeds());
-        jsonArray.add(data.getUnkown1());
-        jsonArray.add(data.getJson());
-        jsonArray.add(data.getHtml());
+        List<Object> scriptParameter = data.getStableDiffusionWebUiScriptBaseParameter().getParameterList();
+        jsonArray.addAll(scriptParameter);
         return jsonArray;
     }
 
@@ -342,7 +236,13 @@ public class StableDiffusionWebUiText2ImgParameter extends AiImageCreateParamete
         return webUiData;
     }
 
+    public StableDiffusionWebUiScriptBaseParameter getStableDiffusionWebUiScriptBaseParameter() {
+        return stableDiffusionWebUiScriptBaseParameter;
+    }
 
+    public void setStableDiffusionWebUiScriptBaseParameter(StableDiffusionWebUiScriptBaseParameter stableDiffusionWebUiScriptBaseParameter) {
+        this.stableDiffusionWebUiScriptBaseParameter = stableDiffusionWebUiScriptBaseParameter;
+    }
 
     public String getPrompt_Styles1() {
         return prompt_Styles1;
@@ -393,27 +293,27 @@ public class StableDiffusionWebUiText2ImgParameter extends AiImageCreateParamete
     }
 
     public int getResizeHeight() {
-        return ResizeHeight;
+        return resizeHeight;
     }
 
     public void setResizeHeight(int resizeHeight) {
-        ResizeHeight = resizeHeight;
+        this.resizeHeight = resizeHeight;
     }
 
     public int getResizeWidth() {
-        return ResizeWidth;
+        return resizeWidth;
     }
 
     public void setResizeWidth(int resizeWidth) {
-        ResizeWidth = resizeWidth;
+        this.resizeWidth = resizeWidth;
     }
 
     public boolean isInterrogate() {
-        return interrogate;
+        return variationCheckBox;
     }
 
     public void setInterrogate(boolean interrogate) {
-        this.interrogate = interrogate;
+        this.variationCheckBox = interrogate;
     }
 
     public boolean isHighresFix() {
@@ -425,122 +325,10 @@ public class StableDiffusionWebUiText2ImgParameter extends AiImageCreateParamete
     }
 
     public boolean isScaleLatent() {
-        return ScaleLatent;
+        return scaleLatent;
     }
 
     public void setScaleLatent(boolean scaleLatent) {
-        ScaleLatent = scaleLatent;
-    }
-
-    public String getScript() {
-        return script;
-    }
-
-    public void setScript(String script) {
-        this.script = script;
-    }
-
-    public boolean isScriptArgs1() {
-        return scriptArgs1;
-    }
-
-    public void setScriptArgs1(boolean scriptArgs1) {
-        this.scriptArgs1 = scriptArgs1;
-    }
-
-    public boolean isScriptArgs2() {
-        return scriptArgs2;
-    }
-
-    public void setScriptArgs2(boolean scriptArgs2) {
-        this.scriptArgs2 = scriptArgs2;
-    }
-
-    public JSONObject getFaceRestorationModel() {
-        return faceRestorationModel;
-    }
-
-    public void setFaceRestorationModel(JSONObject faceRestorationModel) {
-        this.faceRestorationModel = faceRestorationModel;
-    }
-
-    public String getScriptArgs4() {
-        return scriptArgs4;
-    }
-
-    public void setScriptArgs4(String scriptArgs4) {
-        this.scriptArgs4 = scriptArgs4;
-    }
-
-    public String getScriptArgs5() {
-        return scriptArgs5;
-    }
-
-    public void setScriptArgs5(String scriptArgs5) {
-        this.scriptArgs5 = scriptArgs5;
-    }
-
-    public String getScriptArgs6() {
-        return scriptArgs6;
-    }
-
-    public void setScriptArgs6(String scriptArgs6) {
-        this.scriptArgs6 = scriptArgs6;
-    }
-
-    public String getScriptArgs7() {
-        return scriptArgs7;
-    }
-
-    public void setScriptArgs7(String scriptArgs7) {
-        this.scriptArgs7 = scriptArgs7;
-    }
-
-    public String getScriptArgs8() {
-        return scriptArgs8;
-    }
-
-    public void setScriptArgs8(String scriptArgs8) {
-        this.scriptArgs8 = scriptArgs8;
-    }
-
-    public boolean isDrawLegend() {
-        return DrawLegend;
-    }
-
-    public void setDrawLegend(boolean drawLegend) {
-        DrawLegend = drawLegend;
-    }
-
-    public boolean isKeepSeeds() {
-        return KeepSeeds;
-    }
-
-    public void setKeepSeeds(boolean keepSeeds) {
-        KeepSeeds = keepSeeds;
-    }
-
-    public String getUnkown1() {
-        return unkown1;
-    }
-
-    public void setUnkown1(String unkown1) {
-        this.unkown1 = unkown1;
-    }
-
-    public String getJson() {
-        return json;
-    }
-
-    public void setJson(String json) {
-        this.json = json;
-    }
-
-    public String getHtml() {
-        return html;
-    }
-
-    public void setHtml(String html) {
-        this.html = html;
+        this.scaleLatent = scaleLatent;
     }
 }

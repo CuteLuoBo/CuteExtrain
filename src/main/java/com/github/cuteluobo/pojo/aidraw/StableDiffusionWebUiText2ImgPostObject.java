@@ -20,6 +20,10 @@ public class StableDiffusionWebUiText2ImgPostObject {
      */
     private String session_hash;
 
+    public StableDiffusionWebUiText2ImgPostObject(int fn_index) {
+        this.fn_index = fn_index;
+    }
+
     public JSONArray getData() {
         return data;
     }
