@@ -17,6 +17,7 @@ import net.mamoe.mirai.event.Listener;
 import net.mamoe.mirai.event.events.*;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.MessageChainBuilder;
+import net.mamoe.mirai.utils.LoggerAdapters;
 import net.mamoe.mirai.utils.MiraiLogger;
 import org.apache.ibatis.session.Configuration;
 
@@ -73,6 +74,8 @@ public final class CuteExtra extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        //log4j2-无效，会剥夺控制台所有正常输出
+//        LoggerAdapters.useLog4j2();
         try {
             initDatasource();
             permissionExecute();
@@ -208,7 +211,7 @@ public final class CuteExtra extends JavaPlugin {
 //                logger.info("初始化数据表完成");
 //            }
         logger.info("加载数据库完成");
-//        LoggerAdapters.useLog4j2();
+//
     }
 
     public Permission getBasePermission() {

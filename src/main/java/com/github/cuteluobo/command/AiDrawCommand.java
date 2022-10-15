@@ -79,6 +79,7 @@ public class AiDrawCommand extends CompositeCommand {
                 , SimpleCommandArgumentContext.EMPTY);
     }
 
+    //TODO 解决引用消息时，自动带的at导致无法直接输入命令的问题
 
     @SubCommand({"translate","tr","翻译"})
     public Boolean translate(@NotNull CommandSenderOnMessage<MessageEvent> sender,  MessageChain messageChain) {
@@ -162,7 +163,12 @@ public class AiDrawCommand extends CompositeCommand {
                 .append("- 参数A：normal(n) -> 普通/直接提交tags不进行转换（建议）").append("\n")
                 .append("- 参数B：translate(tr) -> 翻译/转为英文后提交，有机翻词不达意问题").append("\n")
                 .append("- 注意！对于英文tags带空格的，需要使用’_‘(下划线)连接，否则会自动分割").append("\n")
-                .append("- 示例：/ad n miku,lolita,flat_chest");
+                .append("- 默认生成尺寸为512x768，可通过高级参数调整").append("\n")
+                .append("- 高级参数列表1：w=宽度(int)  h=高度(int)  seed=种子(long) steps=步数(int) p=提示 lp=负面提示").append("\n")
+                .append("- 高级参数列表2：m=采样方法(string) dn=去噪强度(double) scale=提示可信度(double)").append("\n")
+                .append("- 示例A：/ad n miku,lolita,flat_chest")
+                .append("- 示例B：/ad n w=512 h=512 seed=998 miku,lolita,flat_chest")
+                .append("- 示例C：/ad n w=512 h=512 \"p=miku,lolita,flat_chest\" \"lp=lowres, bad anatomy, bad hands\"");
         sender.sendMessage(chainBuilder.build());
         return true;
     }
@@ -204,7 +210,7 @@ public class AiDrawCommand extends CompositeCommand {
             try{
                 aiImageCreateParameter = messageChainParse(message,allowTranslate,hasLimit);
             } catch (NumberFormatException e) {
-                chainBuilder.append("高级参数解析出现错误-数值转换错误\n").append(e.getLocalizedMessage());
+                chainBuilder.append("高级参数解析出现错误-数值转换异常\n").append(e.getLocalizedMessage());
                 logger.debug("高级参数解析出现错误-数值转换错误", e);
                 sender.sendMessage(chainBuilder.build());
                 return false;
@@ -288,7 +294,7 @@ public class AiDrawCommand extends CompositeCommand {
                 }
                 long getImgEndTime = System.currentTimeMillis();
                 if (imgList.size() == 0) {
-                    chainBuilder.append("无图片数据，可能结果：token失效/tags错误");
+                    chainBuilder.append("无图片数据，可能结果：服务器连接token失效/生成参数错误");
                     sender.sendMessage(chainBuilder.build());
                     return;
                 }
@@ -316,7 +322,7 @@ public class AiDrawCommand extends CompositeCommand {
                 }
                 //展示tags
                 if (showTags) {
-                    chainBuilder.append("生成tags：").append("(masterpiece, best quality,) ").append(finalTags);
+                    chainBuilder.append("生成tags：").append(aiImageCreateParameter.getPrompt());
                 }
                 sender.sendMessage(chainBuilder.build());
             } catch (Exception e) {

@@ -31,6 +31,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class WebUiAiDrawServiceImpl implements AiDrawService{
     static Logger logger = LoggerFactory.getLogger(WebUiAiDrawServiceImpl.class);
+
     private static final ThreadPoolExecutor THREAD_POOL_EXECUTOR = new ThreadPoolExecutor(1, 10, 30, TimeUnit.SECONDS
             , new SynchronousQueue<>(true)
             , new MyThreadFactory("WebUiAiDrawServiceImpl"));
@@ -86,7 +87,8 @@ public class WebUiAiDrawServiceImpl implements AiDrawService{
         if (token == null) {
             login();
         }
-        StableDiffusionWebUiText2ImgPostObject postData = new StableDiffusionWebUiText2ImgPostObject(29);
+        //旧版29，新版31
+        StableDiffusionWebUiText2ImgPostObject postData = new StableDiffusionWebUiText2ImgPostObject(31);
         StableDiffusionWebUiImg2ImgParameter parameter1 = StableDiffusionWebUiImg2ImgParameter.convert(parameter);
         postData.setData(StableDiffusionWebUiImg2ImgParameter.createDataArray(parameter1));
         String json = JSON.toJSONString(postData);

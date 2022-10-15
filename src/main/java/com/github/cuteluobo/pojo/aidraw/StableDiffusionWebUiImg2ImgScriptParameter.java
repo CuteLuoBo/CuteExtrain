@@ -54,7 +54,7 @@ public class StableDiffusionWebUiImg2ImgScriptParameter extends StableDiffusionW
      * Poor man's outpainting脚本参数
      */
     private int s4_Pixels2Expand = 128;
-    private int s4_MaskBlur = 8;
+    private int s4_MaskBlur = 4;
     private String s4_MaskedContent = "fill";
     private String[] s4_OutpaintingDirection = {"left", "right", "up", "down"};
 
