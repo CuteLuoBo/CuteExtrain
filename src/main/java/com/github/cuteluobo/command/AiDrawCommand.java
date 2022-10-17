@@ -533,11 +533,13 @@ public class AiDrawCommand extends CompositeCommand {
         }
         //没有高级定义正面提示时，对筛出的参数进行装配
         if (customPrompt == null) {
+            //非高级参数生成的，添加默认的优化tags
+            customPrompt = "masterpiece, best quality,";
             //翻译时URL传链接空格会出现未知错误
             if (allowTranslate) {
-                customPrompt = String.join(",", promptList);
+                customPrompt = customPrompt + String.join(",", promptList);
             } else {
-                customPrompt = String.join(" ", promptList);
+                customPrompt = customPrompt + String.join(" ", promptList);
             }
         }
         //处理逗号并赋值
