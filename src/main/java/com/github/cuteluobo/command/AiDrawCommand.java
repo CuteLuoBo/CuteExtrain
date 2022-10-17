@@ -82,7 +82,7 @@ public class AiDrawCommand extends CompositeCommand {
     //TODO 解决引用消息时，自动带的at导致无法直接输入命令的问题
 
     @SubCommand({"translate","tr","翻译"})
-    public Boolean translate(@NotNull CommandSenderOnMessage<MessageEvent> sender,  MessageChain messageChain) {
+    public Boolean translate(@NotNull CommandSenderOnMessage<MessageEvent> sender) {
         User user = sender.getUser();
         if (user != null) {
             return tagsMessageHandlerAndExecTask(true, true, true,true, sender, sender.getFromEvent().getMessage(),user.getId() != GlobalConfig.ADMIN_ID);
@@ -91,7 +91,7 @@ public class AiDrawCommand extends CompositeCommand {
     }
 
     @SubCommand({"normal","n","默认"})
-    public Boolean normal(@NotNull CommandSenderOnMessage<MessageEvent> sender, MessageChain messageChain){
+    public Boolean normal(@NotNull CommandSenderOnMessage<MessageEvent> sender){
         MessageEvent event = sender.getFromEvent();
         User user = sender.getUser();
         if (user != null) {
@@ -101,7 +101,7 @@ public class AiDrawCommand extends CompositeCommand {
     }
 
     @SubCommand({"nosafe","h","不安全生成"})
-    public Boolean nosafe(@NotNull CommandSenderOnMessage<MessageEvent> sender, MessageChain messageChain){
+    public Boolean nosafe(@NotNull CommandSenderOnMessage<MessageEvent> sender){
         User user = sender.getUser();
         //只处理非控制台消息
         if (user != null) {
@@ -237,9 +237,9 @@ public class AiDrawCommand extends CompositeCommand {
                         .append("本次启动总累计完成任务数：").append(String.valueOf(threadPoolExecutor.getCompletedTaskCount()));
                 MessageChain messages = chainBuilder.build();
                 MessageReceipt<Contact> messageReceipt = sender.sendMessage(messages);
-                //3秒后进行撤回避免刷屏
+                //5秒后进行撤回避免刷屏
                 if (messageReceipt != null) {
-                    messageReceipt.recallIn(3000L);
+                    messageReceipt.recallIn(5000L);
                 }
             } catch (RejectedExecutionException rejectedExecutionException) {
                 chainBuilder.append("任务队列已满，请稍后重试");
@@ -392,7 +392,8 @@ public class AiDrawCommand extends CompositeCommand {
                 boolean hasFind = false;
                 while (matcher.find()) {
                     hasFind = true;
-                    argsList.add(matcher.group());
+                    //替换提取出的双引号
+                    argsList.add(matcher.group().replaceAll("\"",""));
                 }
                 //取出后清空
                 if (hasFind) {

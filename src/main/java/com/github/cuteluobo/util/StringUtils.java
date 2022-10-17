@@ -14,7 +14,7 @@ public class StringUtils {
      */
     private static final Pattern comma = Pattern.compile(",,+");
     private static final Pattern chineseTextCheck = Pattern.compile("[\u4e00-\u9fa5]");
-    public static final Pattern oneArg = Pattern.compile("\"[^\"]*\"");
+    public static final Pattern oneArg = Pattern.compile("\"([^\"]*)\"");
 
     /**
      * 用于Tags的逗号处理
